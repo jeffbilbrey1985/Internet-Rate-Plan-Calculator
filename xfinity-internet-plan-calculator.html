@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xfinity Internet Plan Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #e60000;
+  --red-dark: #b30000;
+  --black: #05050a;
+  --surface: #0d0d14;
+  --surface2: #16161f;
+  --surface3: #1c1c28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --white: #ffffff;
+  --text: #ececf4;
+  --muted: #7070a0;
+  --green: #00d46a;
+  --gold: #ffb700;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Barlow', sans-serif; background: var(--black); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── TOPBAR ── */
+.topbar { background: rgba(5,5,10,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.xf-wordmark { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 900; color: var(--white); letter-spacing: -0.5px; }
+.xf-wordmark em { color: var(--white); font-style: normal; }
+.topbar-right { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+
+/* ── QUIZ ── */
+.quiz-progress { height: 2px; background: var(--surface2); }
+.quiz-progress-fill { height: 100%; background: var(--red); transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.quiz-container { max-width: 580px; margin: 0 auto; padding: 52px 24px 40px; min-height: calc(100vh - 58px); display: flex; flex-direction: column; justify-content: center; }
+.q-step-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); margin-bottom: 12px; }
+.q-text { font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 700; line-height: 1.1; color: var(--white); margin-bottom: 30px; }
+.q-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 16px 20px; font-family: 'Barlow', sans-serif; font-size: 20px; color: var(--white); outline: none; transition: border-color 0.2s; margin-bottom: 30px; }
+.q-input::placeholder { color: var(--muted); }
+.q-input:focus { border-color: var(--red); }
+.single-opts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+.opt-card { background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 14px 18px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 14px; font-size: 16px; color: var(--text); }
+.opt-card:hover { background: #1e1e2e; }
+.opt-card.sel { border-color: var(--red); background: rgba(230,0,0,0.1); color: var(--white); }
+.opt-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.opt-card.sel .opt-radio { border-color: var(--red); background: var(--red); }
+.opt-radio-dot { width: 8px; height: 8px; border-radius: 50%; background: white; opacity: 0; transition: 0.15s; }
+.opt-card.sel .opt-radio-dot { opacity: 1; }
+.chip-opts { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+.chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 40px; padding: 10px 18px; font-size: 14px; color: var(--text); cursor: pointer; transition: all 0.15s; user-select: none; }
+.chip:hover { border-color: rgba(255,255,255,0.3); }
+.chip.sel { border-color: var(--red); background: rgba(230,0,0,0.12); color: var(--white); }
+.q-nav { display: flex; gap: 10px; align-items: center; }
+.btn-back-q { background: transparent; border: 1px solid var(--border2); border-radius: 6px; padding: 13px 20px; font-size: 14px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.btn-back-q:hover { color: var(--text); }
+.btn-next-q { flex: 1; background: var(--red); border: none; border-radius: 6px; padding: 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: white; cursor: pointer; transition: all 0.15s; }
+.btn-next-q:hover { background: #cc0000; }
+.btn-next-q:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-skip-q { background: transparent; border: none; font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: underline; padding: 0 8px; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: fadeUp 0.32s ease both; }
+
+/* ═══════════════════════════════════════════════
+   RESULT SCREEN — PREMIUM ADVERTISEMENT REDESIGN
+═══════════════════════════════════════════════ */
+#result-screen {
+  background: var(--black);
+  min-height: 100vh;
+  color: var(--text);
+}
+
+/* ── CINEMATIC HERO ── */
+.r-hero {
+  position: relative;
+  background: var(--black);
+  overflow: hidden;
+  padding: 40px 28px 36px;
+  text-align: center;
+}
+
+/* Animated background grid */
+.r-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(230,0,0,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,0,0,0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Red glow orb */
+.r-hero::after {
+  content: '';
+  position: absolute;
+  top: -80px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse, rgba(230,0,0,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.r-hero-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+
+.r-greeting {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--red);
+  margin-bottom: 14px;
+  animation: fadeIn 0.5s ease 0.1s both;
+}
+
+.r-main-headline {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(46px, 8vw, 72px);
+  font-weight: 900;
+  line-height: 0.95;
+  color: var(--white);
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+  animation: fadeUp 0.5s ease 0.15s both;
+}
+
+.r-main-headline em {
+  color: var(--red);
+  font-style: normal;
+  display: block;
+}
+
+.r-sub-text {
+  font-size: 16px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 30px;
+  animation: fadeUp 0.5s ease 0.2s both;
+}
+
+/* Big price display */
+.r-price-hero {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.5s ease 0.25s both;
+}
+.r-price-from { font-size: 16px; color: rgba(255,255,255,0.4); margin-right: 4px; }
+.r-price-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 96px; font-weight: 900; line-height: 1;
+  color: var(--white);
+  text-shadow: 0 0 60px rgba(230,0,0,0.4);
+}
+.r-price-mo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.45); align-self: flex-end; margin-bottom: 12px; }
+
+.r-price-lock-line {
+  font-size: 13px; color: var(--green);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-bottom: 28px;
+  animation: fadeUp 0.5s ease 0.3s both;
+}
+
+/* Speed pill selector */
+.speed-pills {
+  display: inline-flex; gap: 8px; background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2); border-radius: 50px; padding: 5px;
+  margin-bottom: 36px;
+  animation: fadeUp 0.5s ease 0.35s both;
+}
+.speed-pill {
+  border: none; border-radius: 40px; padding: 8px 20px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700;
+  color: rgba(255,255,255,0.5); background: transparent; cursor: pointer; transition: all 0.2s;
+}
+.speed-pill:hover { color: var(--white); }
+.speed-pill.active { background: var(--red); color: var(--white); }
+.speed-pill-sub { font-size: 10px; display: block; opacity: 0.7; font-weight: 400; }
+
+/* ── WHAT'S INCLUDED SECTION ── */
+.r-includes {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 0 0 0;
+}
+
+.r-includes-inner {
+  max-width: 800px; margin: 0 auto; padding: 40px 24px;
+}
+
+.section-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--red); margin-bottom: 8px; text-align: center;
+}
+
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px; font-weight: 900; color: var(--white);
+  text-align: center; margin-bottom: 32px; line-height: 1.1;
+}
+
+/* ── SPEED CALLOUT BAR ── */
+.speed-callout {
+  background: linear-gradient(90deg, rgba(230,0,0,0.15) 0%, rgba(230,0,0,0.05) 100%);
+  border: 1px solid rgba(230,0,0,0.25);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.sc-left { display: flex; align-items: center; gap: 16px; }
+.sc-speed-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 52px; font-weight: 900; color: var(--white); line-height: 1;
+}
+.sc-speed-mbps { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.4); align-self: flex-end; margin-bottom: 6px; }
+.sc-facts { display: flex; flex-direction: column; gap: 5px; }
+.sc-fact { font-size: 13px; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 7px; }
+.sc-fact-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.sc-right { display: flex; gap: 10px; flex-wrap: wrap; }
+.sc-badge { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 14px; text-align: center; }
+.sc-badge-val { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--white); display: block; }
+.sc-badge-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── STREAMING GRID ── */
+.streaming-section-label {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 14px; margin-top: 24px;
+}
+
+.streaming-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.svc-tile {
+  border-radius: 12px;
+  aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px; position: relative; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+.svc-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+
+.tile-disney { background: #001a6e; }
+.tile-hulu   { background: #1ce783; }
+.tile-peacock { background: #0a0a0a; border: 1px solid #222; }
+.tile-nowtv  { background: #111; border: 1px solid #222; }
+
+.svc-tile svg, .svc-tile img { width: 100%; max-height: 40px; object-fit: contain; display: block; }
+
+.tile-label {
+  font-size: 11px; color: rgba(255,255,255,0.45);
+  text-align: center; margin-top: 6px;
+}
+
+/* Additional features list */
+.feature-list {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.feature-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.fi-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(230,0,0,0.12); border: 1px solid rgba(230,0,0,0.2);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fi-icon svg { width: 16px; height: 16px; }
+.fi-text-head { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 2px; }
+.fi-text-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+/* ── STREAM SAVER — STANDALONE PREMIUM SECTION ── */
+.ss-section {
+  background: var(--black);
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.ss-section-inner {
+  max-width: 800px; margin: 0 auto; padding: 36px 24px;
+}
+
+.ss-ad-card {
+  border: 1.5px solid rgba(255,183,0,0.25);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #0e0c00 0%, #0a0a14 50%, #0c0800 100%);
+}
+
+.ss-ad-top {
+  padding: 24px 26px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ss-ad-left { flex: 1; }
+
+.ss-ad-kicker {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+
+.ss-ad-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px; font-weight: 900; color: var(--white);
+  line-height: 1.1; margin-bottom: 6px;
+}
+
+.ss-ad-desc {
+  font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.5; max-width: 340px;
+}
+
+.ss-ad-right { text-align: right; flex-shrink: 0; }
+.ss-add-price {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 48px; font-weight: 900; color: var(--gold); line-height: 1;
+}
+.ss-add-mo { font-size: 14px; color: rgba(255,183,0,0.6); }
+.ss-add-was { font-size: 12px; color: var(--muted); text-decoration: line-through; margin-top: 4px; }
+
+/* Toggle row */
+.ss-toggle-row {
+  padding: 16px 26px;
+  background: rgba(255,183,0,0.05);
+  border-top: 1px solid rgba(255,183,0,0.12);
+  display: flex; align-items: center; gap: 14px; cursor: pointer;
+}
+.ss-toggle-row:hover { background: rgba(255,183,0,0.09); }
+.ss-toggle-btn {
+  width: 48px; height: 28px; border-radius: 14px;
+  background: rgba(255,255,255,0.12); position: relative;
+  transition: background 0.25s; flex-shrink: 0;
+}
+.ss-toggle-btn.on { background: var(--gold); }
+.ss-toggle-thumb {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: white; position: absolute; top: 2px; left: 2px;
+  transition: left 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.ss-toggle-btn.on .ss-toggle-thumb { left: 22px; }
+.ss-toggle-label { font-size: 15px; font-weight: 600; color: var(--white); }
+.ss-toggle-sub { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* Service badges inside SS card */
+.ss-services-row {
+  padding: 18px 26px 22px;
+  display: flex; gap: 10px; flex-wrap: wrap;
+  border-top: 1px solid rgba(255,183,0,0.08);
+}
+
+.ss-svc { display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 9px 14px; font-size: 14px; font-weight: 700; }
+.ss-netflix { background: #e50914; color: white; }
+.ss-apple   { background: #1c1c1e; color: white; border: 1px solid #3a3a3a; }
+.ss-peacock2 { background: #111; color: white; border: 1px solid #333; }
+
+/* ── PRICE SUMMARY FOOTER ── */
+.r-price-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 0;
+}
+.r-price-footer-inner {
+  max-width: 800px; margin: 0 auto; padding: 32px 24px 20px;
+}
+
+.rpf-lines { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.rpf-line { display: flex; justify-content: space-between; align-items: center; }
+.rpfl-name { font-size: 14px; color: rgba(255,255,255,0.5); }
+.rpfl-val { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.8); }
+.rpf-sep { height: 1px; background: rgba(255,255,255,0.06); margin: 8px 0; }
+
+.rpf-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 16px;
+}
+.rpft-label { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+.rpft-val { font-family: 'Barlow Condensed', sans-serif; font-size: 60px; font-weight: 900; color: var(--white); line-height: 1; }
+.rpft-mo { font-size: 18px; color: rgba(255,255,255,0.35); margin-left: 4px; }
+
+.rpf-guarantees {
+  display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.rpf-guarantee {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: rgba(255,255,255,0.5);
+}
+.rpfg-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+/* ── PERSONALIZED BANNER ── */
+.personalized-banner {
+  background: linear-gradient(90deg, rgba(230,0,0,0.12) 0%, rgba(230,0,0,0.03) 100%);
+  border: 1px solid rgba(230,0,0,0.2);
+  border-radius: 12px;
+  padding: 20px 22px 20px 26px;
+  margin-bottom: 24px;
+  position: relative; overflow: hidden;
+}
+.personalized-banner::before {
+  content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--red); border-radius: 12px 0 0 12px;
+}
+.pb-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:var(--red); margin-bottom:7px; text-align:center; }
+.pb-headline { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:900; color:var(--white); line-height:1.15; margin-bottom:8px; text-align:center; }
+.pb-body { font-size:15px; color:rgba(255,255,255,0.6); line-height:1.65; text-align:center; }
+.pb-body strong { color:var(--white); font-weight:600; }
+
+/* ── SPEED HERO — CENTERED ── */
+.speed-hero-new {
+  background: linear-gradient(135deg, #130008 0%, #09090f 55%, #0b0015 100%);
+  border: 1px solid rgba(230,0,0,0.25);
+  border-radius: 14px; padding: 32px 26px 24px; margin-bottom: 20px;
+  position: relative; overflow: hidden; text-align: center;
+}
+.speed-hero-new::after {
+  content:''; position:absolute; top:-60px; left:50%; transform:translateX(-50%);
+  width:300px; height:300px; border-radius:50%;
+  background: radial-gradient(circle, rgba(230,0,0,0.13) 0%, transparent 70%);
+  pointer-events:none;
+}
+.shn-centered-top { display:flex; flex-direction:column; align-items:center; margin-bottom:24px; position:relative; z-index:1; }
+.shn-speed-wrap-center { display:flex; align-items:baseline; gap:10px; justify-content:center; margin-bottom:6px; }
+.shn-num {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:130px; font-weight:900; color:var(--white); line-height:1;
+  letter-spacing:-5px; text-shadow: 0 0 100px rgba(230,0,0,0.4);
+}
+.shn-unit { font-family:'Barlow Condensed',sans-serif; font-size:34px; font-weight:700; color:rgba(255,255,255,0.3); align-self:flex-end; padding-bottom:18px; }
+.shn-tagline-center { font-size:15px; color:rgba(255,255,255,0.45); letter-spacing:0.04em; }
+
+/* Feature boxes at bottom */
+.shn-feature-boxes { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; position:relative; z-index:1; }
+.shn-feature-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(230,0,0,0.2);
+  border-radius: 10px; padding: 14px 10px 12px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 6px;
+  transition: background 0.2s;
+}
+.shn-feature-box:hover { background: rgba(230,0,0,0.08); }
+.shn-feature-icon svg { width:18px; height:18px; display:block; }
+.shn-feature-label { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:900; color:var(--white); line-height:1.2; letter-spacing:0.02em; }
+.shn-feature-sub { font-size:11px; color:rgba(255,255,255,0.4); line-height:1.4; }
+
+@media (max-width:520px) {
+  .shn-feature-boxes { grid-template-columns:repeat(2,1fr); }
+  .shn-num { font-size:96px; }
+}
+
+/* ── LOGO CARDS — FULL REBRAND ── */
+.svc-section-head { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; margin-top:2px; text-align:center; }
+.logo-grid { display:grid; gap:10px; margin-bottom:20px; }
+.logo-grid-4 { grid-template-columns:repeat(4,1fr); }
+.logo-grid-2 { grid-template-columns:repeat(2,1fr); }
+.logo-card {
+  border-radius:14px; aspect-ratio:16/11;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:16px 12px 12px; position:relative; overflow:hidden;
+  transition:transform 0.2s, box-shadow 0.2s;
+}
+.logo-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.55); }
+.logo-card svg { width:80%; max-height:46px; display:block; }
+.logo-card-name { font-size:13px; color:rgba(255,255,255,0.45); margin-top:10px; text-align:center; letter-spacing:0.03em; }
+.lc-disney  { background:linear-gradient(145deg,#010c40,#021369); }
+.lc-hulu    { background:linear-gradient(145deg,#0d8c43,#1ce783); }
+.lc-peacock { background:#000; border:1px solid #1c1c1c; }
+.lc-nowtv   { background:linear-gradient(145deg,#0e0e0e,#181818); border:1px solid #222; }
+
+/* ── XFINITY MEMBERSHIP PERKS ── */
+.membership-section {
+  background:linear-gradient(135deg,#08060f 0%, #0d0818 100%);
+  border:1px solid rgba(140,70,255,0.2); border-radius:14px; overflow:hidden; margin-bottom:4px;
+}
+.membership-head { padding:18px 22px 14px; border-bottom:1px solid rgba(140,70,255,0.1); display:flex; align-items:center; justify-content:center; gap:12px; }
+.membership-xicon {
+  width:36px; height:36px; border-radius:9px;
+  background:linear-gradient(135deg,#9b30ff,#6600cc);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.membership-xicon svg { width:18px; height:18px; }
+.membership-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:rgba(160,100,255,0.85); margin-bottom:3px; }
+.membership-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:900; color:var(--white); line-height:1.1; }
+.membership-grid { display:grid; grid-template-columns:1fr 1fr; }
+.mg-item { padding:18px 20px; border-right:1px solid rgba(140,70,255,0.1); border-bottom:1px solid rgba(140,70,255,0.1); display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; }
+.mg-item:nth-child(even) { border-right:none; }
+.mg-item:nth-last-child(-n+2) { border-bottom:none; }
+.mg-icon { width:36px; height:36px; border-radius:9px; background:rgba(140,70,255,0.14); border:1px solid rgba(140,70,255,0.22); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.mg-icon svg { width:16px; height:16px; }
+.mg-head { font-size:15px; font-weight:700; color:var(--white); margin-bottom:2px; }
+.mg-sub  { font-size:13px; color:var(--muted); line-height:1.45; }
+
+@media (max-width:520px) {
+  .logo-grid-4 { grid-template-columns:repeat(2,1fr); }
+  .shn-num { font-size:72px; }
+  .shn-perks { grid-template-columns:1fr; }
+  .membership-grid { grid-template-columns:1fr; }
+  .mg-item { border-right:none; }
+}
+
+.conf-disclaimer {
+  font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.7;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 14px; margin-top: 4px; margin-bottom: 18px;
+  text-align: left;
+}
+.conf-disclaimer strong { color: rgba(255,255,255,0.65); }
+.conf-btn-row { display: flex; flex-direction: column; gap: 10px; }
+.btn-recap {
+  background: transparent; border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7); border-radius: 8px; padding: 14px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-recap:hover { border-color: rgba(255,255,255,0.35); color: var(--white); }
+
+/* ── NO THANKS BUTTON ── */
+.btn-no-thanks {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px; padding: 15px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 17px;
+  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); cursor: pointer; width: 100%;
+  transition: all 0.2s;
+}
+.btn-no-thanks:hover { border-color: rgba(255,255,255,0.3); color: var(--white); }
+
+/* ── RECAP OUTCOME BADGE ── */
+.recap-outcome-badge {
+  display: inline-block; margin-top: 8px;
+  padding: 4px 12px; border-radius: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.badge-signedup { background: rgba(0,212,106,0.15); color: var(--green); border: 1px solid rgba(0,212,106,0.3); }
+.badge-nothanks { background: rgba(0,212,106,0.15); color: var(--green); border: 1px solid rgba(0,212,106,0.3); }
+
+/* ── REP SUBMISSION SECTION ── */
+.rep-section {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 20px; margin-top: 16px;
+}
+.rep-section-head {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+}
+.rep-field { margin-bottom: 14px; }
+.rep-label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: rgba(255,255,255,0.5); margin-bottom: 6px; letter-spacing: 0.03em;
+}
+.rep-input, .rep-select {
+  width: 100%; background: var(--surface3);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+  padding: 12px 14px; font-family: 'Barlow', sans-serif;
+  font-size: 15px; color: var(--white); outline: none;
+  transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+}
+.rep-input::placeholder { color: var(--muted); }
+.rep-input:focus, .rep-select:focus { border-color: rgba(230,0,0,0.5); }
+.rep-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23707090' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.rep-select option { background: #16161f; color: var(--white); }
+.rep-submit-status {
+  font-size: 13px; color: var(--green); text-align: center;
+  min-height: 20px; margin-bottom: 10px;
+}
+.btn-submit-recap {
+  width: 100%; background: var(--red); border: none; border-radius: 10px;
+  padding: 16px; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: white; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px; transition: all 0.2s;
+  margin-bottom: 0;
+}
+.btn-submit-recap:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-submit-recap:not(:disabled):hover { background: #cc0000; }
+
+/* ── PREPAY MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; animation: fadeIn 0.2s ease;
+}
+.modal-box {
+  background: var(--surface2);
+  border: 1px solid rgba(255,183,0,0.3);
+  border-radius: 18px; max-width: 420px; width: 100%;
+  padding: 32px 28px; text-align: center;
+  animation: fadeUp 0.25s ease;
+}
+.modal-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(255,183,0,0.1); border: 2px solid rgba(255,183,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 18px;
+}
+.modal-title { font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:900; color:var(--white); margin-bottom:6px; }
+.modal-sub { font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.5; }
+.modal-disclaimer {
+  background: rgba(255,183,0,0.06);
+  border: 1px solid rgba(255,183,0,0.18);
+  border-radius: 10px; padding: 16px 18px;
+  text-align: left; margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.modal-disclaimer p { font-size:13px; color:rgba(255,255,255,0.7); line-height:1.65; margin:0; }
+.modal-disclaimer strong { color:var(--white); }
+.modal-ack-btn {
+  width: 100%; background: var(--red); border: none; border-radius: 10px;
+  padding: 16px; font-family:'Barlow Condensed',sans-serif; font-size:17px;
+  font-weight:800; letter-spacing:0.06em; text-transform:uppercase;
+  color: white; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px; margin-bottom: 10px;
+  transition: background 0.2s;
+}
+.modal-ack-btn:hover { background: #cc0000; }
+.modal-cancel-btn {
+  width: 100%; background: transparent; border: 1px solid var(--border2);
+  border-radius: 10px; padding: 13px; font-family:'Barlow Condensed',sans-serif;
+  font-size:15px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+  color: var(--muted); cursor: pointer; transition: all 0.2s;
+}
+.modal-cancel-btn:hover { border-color: rgba(255,255,255,0.3); color:var(--white); }
+
+/* ── RECAP SCREEN ── */
+.recap-box {
+  max-width: 540px; margin: 0 auto; padding: 40px 24px 60px;
+}
+.recap-header { margin-bottom: 28px; }
+.recap-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:var(--red); margin-bottom:6px; }
+.recap-title { font-family:'Barlow Condensed',sans-serif; font-size:38px; font-weight:900; color:var(--white); }
+.recap-section { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:14px; }
+.recap-section-head { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.recap-row { display:flex; justify-content:space-between; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:14px; color:rgba(255,255,255,0.7); }
+.recap-row:last-child { border-bottom:none; }
+.recap-row-label { color:rgba(255,255,255,0.45); font-size:13px; }
+.recap-row-val { color:var(--white); font-weight:600; text-align:right; }
+.recap-total-row { display:flex; justify-content:space-between; align-items:baseline; padding-top:12px; margin-top:4px; border-top:1px solid rgba(255,255,255,0.1); }
+.recap-total-label { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.4); }
+.recap-total-val { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:900; color:var(--white); }
+.recap-total-mo { font-size:14px; color:rgba(255,255,255,0.4); margin-left:3px; }
+.recap-autopay { font-size:11px; color:rgba(255,255,255,0.35); margin-top:4px; text-align:right; }
+.recap-disclaimer {
+  font-size:11px; color:rgba(255,255,255,0.4); line-height:1.7;
+  border:1px solid rgba(255,255,255,0.07); border-radius:10px;
+  padding:14px 16px; margin-top:6px;
+}
+.recap-disclaimer strong { color:rgba(255,255,255,0.65); }
+
+/* ── XFINITY MOBILE VALUE CARD ── */
+/* ── XFINITY MOBILE VALUE CARD ── */
+.xm-value-card {
+  background: linear-gradient(135deg, #0d0d14 0%, #130810 100%);
+  border: 1px solid rgba(230,0,0,0.25);
+  border-radius: 16px; overflow: hidden; margin-bottom: 14px;
+}
+.xmv-header {
+  padding: 20px 20px 16px; text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(135deg, #150008 0%, #0e000e 100%);
+}
+.xmv-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.25em; text-transform:uppercase; color:var(--red); opacity:0.9; margin-bottom:6px; }
+.xmv-title { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:900; color:var(--white); line-height:1.1; }
+.xmv-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.xmv-item {
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:18px 14px; gap:10px;
+  border-right:1px solid rgba(255,255,255,0.06);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+.xmv-item:hover { background: rgba(230,0,0,0.06); }
+.xmv-item:nth-child(even) { border-right: none; }
+.xmv-item-full { grid-column: 1 / -1; flex-direction:row; text-align:left; align-items:center; justify-content:flex-start; border-right:none; border-bottom:none; }
+.xmv-item-icon { width:44px; height:44px; border-radius:12px; background:rgba(230,0,0,0.12); border:1px solid rgba(230,0,0,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.xmv-item-icon svg { width:20px; height:20px; }
+.xmv-item-head { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:900; color:var(--white); line-height:1.2; }
+.xmv-item-sub { font-size:12px; color:rgba(255,255,255,0.45); line-height:1.45; }
+
+@media (max-width:400px) { .xmv-grid { grid-template-columns:1fr; } .xmv-item:nth-child(even) { border-right:none; } .xmv-item-full { grid-column:1; } }
+
+/* ── STREAM SAVER BUNDLE CARD ── */
+.ss-bundle-card {
+  background: linear-gradient(135deg, #0e0818 0%, #140c22 100%);
+  border: 1px solid rgba(255,183,0,0.25);
+  border-radius: 14px; overflow: hidden; margin-bottom: 14px;
+}
+.ss-bundle-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; padding: 18px 18px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ss-bundle-eyebrow {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 6px;
+}
+.ss-bundle-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 900; color: var(--white); line-height: 1.1;
+  margin-bottom: 4px;
+}
+.ss-bundle-sub { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+.ss-bundle-price-wrap { text-align: right; flex-shrink: 0; }
+.ss-bundle-price {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 44px; font-weight: 900; color: var(--gold); line-height: 1; letter-spacing: -1px;
+}
+.ss-bundle-price-mo { font-size: 12px; color: rgba(255,255,255,0.4); }
+.ss-bundle-was { font-size: 11px; color: rgba(255,255,255,0.3); text-decoration: line-through; margin-top: 2px; }
+
+.ss-bundle-services {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ss-svc-price {
+  font-size: 10px; opacity: 0.6; margin-left: 4px;
+  text-decoration: line-through;
+}
+
+/* Value bar */
+.ss-value-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 18px; background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ss-value-bar-left, .ss-value-bar-right {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ss-value-bar-right { align-items: flex-end; }
+.ss-value-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+.ss-value-strike { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.3); text-decoration: line-through; }
+.ss-value-price { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; color: var(--gold); line-height: 1; }
+.ss-value-save {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--green);
+  letter-spacing: 0.05em;
+}
+
+/* ── FOOTER PRICE BLOCK ── */
+.footer-price-block {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.footer-price-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.footer-price-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.footer-price-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.footer-price-lock { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--green); }
+.footer-price-num { font-family: 'Barlow Condensed', sans-serif; font-size: 88px; font-weight: 900; color: var(--white); line-height: 1; text-shadow: 0 0 60px rgba(230,0,0,0.25); }
+.footer-price-dollar { font-size: 42px; vertical-align: super; }
+.footer-price-mo { font-size: 24px; color: rgba(255,255,255,0.4); margin-left: 2px; }
+.footer-autopay { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+.speed-pill.pill-best { border-color: rgba(230,0,0,0.5); }
+.speed-pill.pill-best.active { background: var(--red); }
+.pill-best-badge { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; margin-bottom: 2px; }
+.pill-speed-sub { font-size: 10px; display: block; opacity: 0.7; font-weight: 400; }
+
+.savings-callout {
+  background: rgba(0,212,106,0.07);
+  border: 1px solid rgba(0,212,106,0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.svc-save-title {
+  font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px;
+}
+.ss-auto-notice {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--gold);
+  background: rgba(255,183,0,0.08); border: 1px solid rgba(255,183,0,0.2);
+  border-radius: 7px; padding: 8px 12px; margin-bottom: 10px;
+}
+.svc-save-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.svc-save-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: rgba(255,255,255,0.6); }
+.svc-save-val { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--green); }
+.svc-save-total-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,212,106,0.15); padding-top: 10px; margin-top: 4px; }
+.svc-save-total-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.svc-save-total-val { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 900; color: var(--green); }
+
+/* ── CTA BUTTONS ── */
+.r-cta-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.btn-signup {
+  background: var(--red); border: none; border-radius: 10px;
+  padding: 20px; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 900; letter-spacing: 0.05em;
+  text-transform: uppercase; color: white; cursor: pointer;
+  transition: all 0.15s; width: 100%;
+  box-shadow: 0 4px 24px rgba(230,0,0,0.35);
+}
+.btn-signup:hover { background: #cc0000; transform: translateY(-1px); box-shadow: 0 6px 30px rgba(230,0,0,0.45); }
+.btn-other {
+  background: transparent; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px; padding: 16px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.15s; width: 100%;
+}
+.btn-other:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+.btn-sm { background: transparent; border: none; font-size: 12px; color: var(--muted); cursor: pointer; text-align: center; text-decoration: underline; padding: 4px; width: 100%; }
+
+/* ══════════════════════════════════════
+   MOBILE SCREEN (unchanged, still dark)
+══════════════════════════════════════ */
+#mobile-screen { background: var(--surface); min-height: 100vh; color: var(--text); }
+
+.mob-hero { background: var(--black); padding: 22px 28px 26px; border-bottom: 3px solid var(--red); }
+.mob-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+.mob-title { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 900; color: var(--white); line-height: 1.1; margin-bottom: 4px; }
+.mob-sub { font-size: 14px; color: var(--muted); }
+
+.mob-body { max-width: 760px; margin: 0 auto; padding: 20px 20px 60px; }
+
+.mob-q-card { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 20px 22px; margin-bottom: 12px; }
+.mob-q-label { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.mob-q-title { font-size: 16px; font-weight: 600; color: var(--white); margin-bottom: 14px; }
+
+.carrier-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.carrier-btn { background: var(--surface3); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 14px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.15s; }
+.carrier-btn:hover { border-color: rgba(255,255,255,0.25); }
+.carrier-btn.active { border-color: var(--red); background: rgba(230,0,0,0.15); color: var(--white); font-weight: 600; }
+
+.lines-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.lines-btn { background: var(--surface3); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.15s; min-width: 52px; text-align: center; }
+.lines-btn:hover { border-color: rgba(255,255,255,0.25); }
+.lines-btn.active { border-color: var(--red); background: rgba(230,0,0,0.15); color: var(--white); }
+
+.bill-wrap { display: flex; align-items: center; }
+.bill-sym { background: var(--surface3); border: 1px solid var(--border2); border-right: none; border-radius: 8px 0 0 8px; padding: 12px 14px; font-size: 20px; color: var(--muted); }
+.bill-inp { flex: 1; background: var(--surface3); border: 1px solid var(--border2); border-radius: 0 8px 8px 0; padding: 12px 14px; font-family: 'Barlow', sans-serif; font-size: 20px; color: var(--white); outline: none; transition: border-color 0.2s; -moz-appearance: textfield; }
+.bill-inp:focus { border-color: var(--red); }
+.bill-inp::-webkit-outer-spin-button,
+.bill-inp::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── COMPARISON CARD — CENTERED, BOLD ── */
+.comp-card {
+  border-radius: 16px; overflow: hidden; margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.comp-head {
+  padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: #0a0a14;
+}
+.comp-head-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.25em;
+  text-transform: uppercase; color: rgba(255,255,255,0.35);
+}
+.comp-head-sub { font-size: 11px; color: rgba(255,255,255,0.22); }
+.comp-cols { display: grid; grid-template-columns: 1fr 1fr; }
+
+/* LEFT — navy blue */
+.comp-col {
+  padding: 22px 14px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  background: linear-gradient(160deg, #080c22 0%, #0c1230 100%);
+  position: relative; overflow: hidden;
+}
+.comp-col::after {
+  content: ''; position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(60,100,255,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.comp-col-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: rgba(100,150,255,0.8); margin-bottom: 5px;
+  position: relative; z-index: 1;
+}
+.comp-carrier-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; font-weight: 900; color: var(--white);
+  line-height: 1.1; margin-bottom: 10px; position: relative; z-index: 1;
+}
+.comp-price {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 80px; font-weight: 900; line-height: 1;
+  letter-spacing: -3px; color: rgba(255,255,255,0.45);
+  margin-bottom: 10px; position: relative; z-index: 1;
+}
+.comp-mo { display: none; }
+.comp-detail {
+  font-size: 13px; color: rgba(255,255,255,0.5);
+  line-height: 1.65; margin-top: auto;
+  position: relative; z-index: 1; text-align: center;
+}
+.comp-detail strong { color: var(--white); font-weight: 700; }
+
+/* RIGHT — deep red */
+.comp-col.xm-side {
+  border-left: 1px solid rgba(230,0,0,0.25);
+  background: linear-gradient(160deg, #1e0008 0%, #2a0010 100%);
+  align-items: center; text-align: center;
+}
+.comp-col.xm-side::after {
+  background: radial-gradient(circle, rgba(230,0,0,0.2) 0%, transparent 70%);
+}
+.comp-col.xm-side .comp-col-label { color: rgba(255,80,80,0.9); }
+.comp-col.xm-side .comp-carrier-name { color: var(--white); }
+.comp-col.xm-side .comp-price { color: var(--red); text-shadow: 0 0 50px rgba(230,0,0,0.4); }
+.comp-col.xm-side .comp-detail { color: rgba(255,255,255,0.6); }
+.comp-col.xm-side .comp-detail strong { color: var(--white); }
+
+/* ── SAVINGS CARD ── */
+.sav-card {
+  background: linear-gradient(135deg, #001a0a 0%, #002010 100%);
+  border: 1px solid rgba(0,212,106,0.35);
+  border-radius: 16px; padding: 20px 16px; margin-bottom: 12px;
+  position: relative; overflow: hidden; text-align: center;
+}
+.sav-card::after {
+  content: ''; position: absolute; bottom: -30px; right: -30px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,106,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sav-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--green); opacity: 0.7; margin-bottom: 16px;
+}
+.sav-row { display: none; }
+.sav-label { display: none; }
+.sav-val { display: none; }
+.sav-year-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding-top: 0; border-top: none; margin-top: 0;
+}
+.sav-mo-col, .sav-yr-col {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 8px;
+  background: rgba(0,0,0,0.25); border-radius: 12px;
+  border: 1px solid rgba(0,212,106,0.18);
+}
+.sav-stat-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: rgba(0,212,106,0.65);
+}
+.sav-stat-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 72px; font-weight: 900; color: var(--green);
+  line-height: 1; letter-spacing: -3px;
+  text-shadow: 0 0 50px rgba(0,212,106,0.45);
+}
+.sav-year-label { display: none; }
+.sav-year-val { display: none; }
+
+.plan-bar { background: var(--surface2); border: 1px solid rgba(230,0,0,0.25); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+.plan-bar-gig-hero {
+  background: linear-gradient(135deg, #1a0008 0%, #220010 100%);
+  padding: 18px 22px 16px; border-bottom: 1px solid rgba(230,0,0,0.2);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.pbg-left {}
+.pbg-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:rgba(230,0,0,0.8); margin-bottom:4px; }
+.pbg-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:900; color:var(--white); line-height:1.1; margin-bottom:2px; }
+.pbg-sub { font-size:12px; color:rgba(255,255,255,0.4); }
+.pbg-price { text-align:right; flex-shrink:0; }
+.pbg-amount { font-family:'Barlow Condensed',sans-serif; font-size:52px; font-weight:900; color:var(--red); line-height:1; letter-spacing:-2px; text-shadow:0 0 30px rgba(230,0,0,0.3); }
+.pbg-mo { font-size:16px; color:rgba(255,255,255,0.4); }
+.pbg-includes { font-size:11px; color:rgba(255,255,255,0.35); margin-top:3px; }
+
+.plan-bar-label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: var(--white); margin-bottom: 10px; padding: 16px 22px 0; }
+.plan-bar-rows { display: flex; flex-direction: column; gap: 8px; padding: 0 22px 16px; }
+.pbr { display: flex; justify-content: space-between; font-size: 14px; color: rgba(255,255,255,0.5); }
+.pbr .pbr-v { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.85); }
+
+/* New prominent total block — visually separated */
+.plan-total-block {
+  background: linear-gradient(135deg, rgba(230,0,0,0.22) 0%, rgba(180,0,0,0.1) 100%);
+  border-top: 2px solid rgba(230,0,0,0.4);
+  padding: 20px 22px 22px;
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.ptb-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--red);
+  margin-bottom: 6px; align-self: flex-start;
+}
+.ptb-price-row {
+  display: flex; align-items: baseline; justify-content: flex-end; gap: 2px;
+  margin-bottom: 4px;
+}
+.ptb-price {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 72px; font-weight: 900; color: var(--white); line-height: 1;
+  letter-spacing: -3px;
+}
+.ptb-mo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.4); margin-left: 2px; align-self: flex-end; padding-bottom: 6px; }
+.ptb-note {
+  font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.4; text-align: right;
+}
+
+.mob-cta { display: flex; flex-direction: column; gap: 10px; }
+.btn-finalize { background: var(--red); border: none; border-radius: 8px; padding: 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: white; cursor: pointer; width: 100%; transition: all 0.15s; box-shadow: 0 4px 20px rgba(230,0,0,0.3); }
+.btn-finalize:hover { background: #cc0000; }
+.btn-back-mob { background: transparent; border: 1px solid var(--border2); border-radius: 8px; padding: 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); cursor: pointer; width: 100%; }
+.btn-back-mob:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+/* ── CONFIRM ── */
+#confirm-screen { background: var(--black); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.conf-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: 16px; max-width: 460px; width: 100%; padding: 36px 32px; text-align: center; animation: fadeUp 0.35s ease; }
+.conf-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(0,212,106,0.1); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.conf-title { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
+.conf-sub { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+.conf-summary { background: var(--surface3); border-radius: 10px; padding: 16px 18px; margin-bottom: 24px; text-align: left; }
+.cs-row { display: flex; justify-content: space-between; font-size: 14px; color: rgba(255,255,255,0.55); padding: 4px 0; }
+.cs-row.total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 10px; font-size: 16px; color: var(--white); font-weight: 600; }
+.btn-done { width: 100%; background: var(--red); border: none; border-radius: 8px; padding: 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: white; cursor: pointer; }
+
+@media (max-width: 500px) {
+  .streaming-grid { grid-template-columns: repeat(2, 1fr); }
+  .feature-list { grid-template-columns: 1fr; }
+  .r-price-num { font-size: 72px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ QUIZ ══════════════ -->
+<div id="quiz-screen" class="screen active">
+  <div class="topbar">
+    
+    <div class="topbar-right">Internet Plan Calculator</div>
+  </div>
+  <div class="quiz-progress"><div class="quiz-progress-fill" id="q-progress" style="width:20%"></div></div>
+  <div class="quiz-container">
+    <div id="q-area" class="fade-in"></div>
+  </div>
+</div>
+
+<!-- ══════════════ RESULT — PREMIUM AD ══════════════ -->
+<div id="result-screen" class="screen">
+  <div class="topbar">
+    
+    <div class="topbar-right">Internet Plan Calculator</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="r-hero">
+    <div class="r-hero-inner">
+      <div class="r-greeting" id="r-greeting">Your Personalized Xfinity Plan</div>
+      <div class="r-main-headline" id="r-headline">
+        Everything you need.
+        <em>One monthly price.</em>
+      </div>
+      <div class="r-sub-text" id="r-subtext">Internet · Live TV · Streaming · Smart Home Security</div>
+    </div>
+  </div>
+
+  <!-- WHAT'S INCLUDED — fully JS-rendered -->
+  <div class="r-includes">
+    <div class="r-includes-inner" id="includes-inner"></div>
+  </div>
+
+  <!-- CTA FOOTER -->
+  <div class="r-price-footer">
+    <div class="r-price-footer-inner">
+
+      <!-- Price summary block -->
+      <div class="footer-price-block">
+        <div class="footer-price-pills" id="speed-pills"></div>
+        <div class="footer-price-row">
+          <div>
+            <div class="footer-price-label" id="footer-price-label-txt">Your monthly total</div>
+            <div class="footer-price-lock">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><polyline points="4,13 9,18 20,7" stroke="#00d46a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="footer-price-lock-txt">5-Year Price Lock · No Contract · Unlimited Data</span>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="footer-price-num"><span class="footer-price-dollar">$</span><span id="hero-price">95</span><span class="footer-price-mo">/mo</span></div>
+            <div class="footer-autopay">w/ autopay &amp; paperless billing</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Streaming savings (only shown when relevant) -->
+      <div id="streaming-savings-box" style="display:none;"></div>
+
+      <!-- STREAM SAVER BUNDLE CARD -->
+      <div class="ss-bundle-card" id="ss-bundle-card">
+        <div class="ss-bundle-header" style="flex-direction:column;align-items:center;text-align:center;">
+          <div class="ss-bundle-eyebrow" style="justify-content:center;" id="ss-bundle-eyebrow-txt">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            The More You Bundle, The More You Save
+          </div>
+          <div class="ss-bundle-title" id="ss-bundle-title-txt">NOW Stream Saver</div>
+          <div class="ss-bundle-sub" id="ss-bundle-sub-txt">Netflix + Apple TV+ + Peacock Premium — all in one add-on</div>
+        </div>
+
+        <!-- Service pills -->
+        <div class="ss-bundle-services" style="justify-content:center;">
+          <div class="ss-svc ss-netflix">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M5 3l5.5 9L5 21h3l3.75-6.5L15.5 21H18L12.5 12 18 3h-3l-3.5 6-3.5-6H5z"/></svg>
+            Netflix <span class="ss-svc-price">$17/mo</span>
+          </div>
+          <div class="ss-svc ss-apple">
+            <svg width="13" height="13" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46.3 790.7 0 663.7 0 541.8c0-207.1 134.8-316.7 267.2-316.7 100.4 0 183.7 66 247.2 66 60.2 0 154.8-70 272-70 40.8 0 108.2 6.4 157.6 55.7zm-172.6-213.5c-25.2 29.9-71.8 53.2-115.5 53.2-1.5 0-3.1 0-4.7-.2.9-40.7 23.2-80.3 51.5-107.2 30.4-28.7 80.2-50.1 121.2-50.1 1.3 0 2.5 0 3.8.1-1.2 42-22 82.9-56.3 104.2z"/></svg>
+            Apple TV+ <span class="ss-svc-price">$10/mo</span>
+          </div>
+          <div class="ss-svc ss-peacock2">
+            🦚 Peacock Premium <span class="ss-svc-price">$6/mo</span>
+          </div>
+        </div>
+
+        <!-- Value bar -->
+        <div class="ss-value-bar">
+          <div class="ss-value-bar-left">
+            <span class="ss-value-label" id="ss-standalone-lbl">Standalone cost</span>
+            <span class="ss-value-strike">$33/mo</span>
+          </div>
+          <div class="ss-value-bar-right">
+            <span class="ss-value-label" id="ss-xfinity-lbl">With Xfinity</span>
+            <span class="ss-value-price">$15/mo</span>
+            <span class="ss-value-save" id="ss-save-txt">Save $18/mo</span>
+          </div>
+        </div>
+
+        <!-- Toggle -->
+        <div class="ss-toggle-row" onclick="toggleSS()">
+          <div class="ss-toggle-btn" id="ss-toggle-btn"><div class="ss-toggle-thumb"></div></div>
+          <div class="ss-toggle-label" id="ss-toggle-label">Add Stream Saver to my plan</div>
+          <div class="ss-toggle-sub" id="ss-toggle-sub">+$15/mo</div>
+        </div>
+      </div>
+      <div class="r-cta-row">
+        <button class="btn-signup" onclick="goMobile('signup')"><span id="btn-signup-lbl">I'm Ready — Sign Me Up</span></button>
+        <button class="btn-other" onclick="goMobile('explore')"><span id="btn-other-lbl">Explore Other Options</span></button>
+        <button class="btn-sm" onclick="restart()"><span id="btn-startover-lbl">← Start over</span></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════ MOBILE SCREEN ══════════════ -->
+<div id="mobile-screen" class="screen">
+  <div class="topbar">
+    
+    <div class="topbar-right">Internet Plan Calculator</div>
+  </div>
+  <div class="mob-hero">
+    <div class="mob-eyebrow" id="mob-eyebrow">Almost done!</div>
+    <div class="mob-title" id="mob-title">One last step — let's talk about your phone bill</div>
+    <div class="mob-sub" id="mob-sub-text">Xfinity Mobile runs on America's most reliable network — Xfinity internet customers save the most.</div>
+  </div>
+  <div class="mob-body">
+    <div class="mob-q-card">
+      <div class="mob-q-label" id="mob-carrier-label">Your current carrier</div>
+      <div class="mob-q-title" id="mob-carrier-title">Who do you currently have your cell service with?</div>
+      <div class="carrier-grid" id="carrier-grid"></div>
+    </div>
+    <div class="mob-q-card">
+      <div class="mob-q-label" id="mob-lines-label">Lines on your account</div>
+      <div class="mob-q-title">How many lines do you have with <span id="carrier-fill">your carrier</span>?</div>
+      <div class="lines-grid" id="lines-grid"></div>
+    </div>
+    <div class="mob-q-card">
+      <div class="mob-q-label" id="mob-bill-label">Your current bill</div>
+      <div class="mob-q-title" id="mob-bill-title">What is your current monthly cell phone bill?</div>
+      <div class="bill-wrap">
+        <div class="bill-sym">$</div>
+        <input class="bill-inp" id="bill-inp" type="number" min="0" max="999" placeholder="e.g. 180" oninput="renderMobComparison()" onwheel="this.blur()">
+      </div>
+    </div>
+    <div id="comp-section" style="display:none;">
+      <div class="comp-card">
+        <div class="comp-head">
+          <div class="comp-head-title" id="comp-head-title-txt">Side-by-Side Comparison</div>
+          <div class="comp-head-sub" id="comp-sub-text"></div>
+        </div>
+        <div class="comp-cols">
+          <div class="comp-col">
+            <div class="comp-col-label" id="comp-curr-lbl">Your Current Plan</div>
+            <div class="comp-carrier-name" id="carrier-col-lbl">Current Carrier</div>
+            <div class="comp-price" id="comp-curr-price">—</div>
+            <div class="comp-mo">/mo</div>
+            <div class="comp-detail" id="comp-curr-detail"></div>
+          </div>
+          <div class="comp-col xm-side">
+            <div class="comp-col-label" id="comp-xm-lbl">Switch &amp; Save</div>
+            <div class="comp-carrier-name" id="comp-xm-name">Xfinity Mobile</div>
+            <div class="comp-price" id="comp-xm-price">—</div>
+            <div class="comp-mo">/mo</div>
+            <div class="comp-detail" id="comp-xm-detail"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sav-card" id="sav-card" style="display:none;">
+        <div class="sav-eyebrow" id="sav-eyebrow-txt">💰 Estimated Savings — Switching to Xfinity Mobile</div>
+        <div class="sav-year-row">
+          <div class="sav-mo-col">
+            <div class="sav-stat-label" id="sav-mo-lbl">Per Month</div>
+            <div class="sav-stat-val" id="sav-mo"></div>
+          </div>
+          <div class="sav-yr-col">
+            <div class="sav-stat-label" id="sav-yr-lbl">First Year</div>
+            <div class="sav-stat-val" id="sav-yr"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- XFINITY MOBILE VALUE CARD — always shown -->
+    <div class="xm-value-card">
+      <div class="xmv-header">
+        <div class="xmv-eyebrow" id="xmv-eyebrow-txt">What You Get with Every Line</div>
+        <div class="xmv-title" id="xmv-title-txt">Xfinity Mobile Premium Unlimited</div>
+      </div>
+      <div class="xmv-grid">
+        <div class="xmv-item">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="xmv-item-head" id="xmv-h-100gb">100 GB Priority Data</div>
+          <div class="xmv-item-sub" id="xmv-s-100gb">High-speed prioritized data every month</div>
+        </div>
+        <div class="xmv-item">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+          </div>
+          <div class="xmv-item-head" id="xmv-h-hotspot">30 GB Mobile Hotspot</div>
+          <div class="xmv-item-sub" id="xmv-s-hotspot">High-speed personal hotspot data</div>
+        </div>
+        <div class="xmv-item">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M17 2H7l-2 5h14l-2-5z"/></svg>
+          </div>
+          <div class="xmv-item-head" id="xmv-h-4k">4K UHD Streaming</div>
+          <div class="xmv-item-sub" id="xmv-s-4k">Crystal-clear video on any screen</div>
+        </div>
+        <div class="xmv-item">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="xmv-item-head" id="xmv-h-cg">Xfinity Call Guard</div>
+          <div class="xmv-item-sub" id="xmv-s-cg">Built-in spam &amp; scam call protection</div>
+        </div>
+        <div class="xmv-item">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+          </div>
+          <div class="xmv-item-head" id="xmv-h-intl">215+ International Destinations</div>
+          <div class="xmv-item-sub" id="xmv-s-intl">Talk, text &amp; data worldwide</div>
+        </div>
+        <div class="xmv-item">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="xmv-item-head" id="xmv-h-wb">WiFi PowerBoost</div>
+          <div class="xmv-item-sub" id="xmv-s-wb">Up to 1 Gig speeds at home &amp; on the go</div>
+        </div>
+        <div class="xmv-item xmv-item-full">
+          <div class="xmv-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(230,0,0,0.9)" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div>
+            <div class="xmv-item-head" id="xmv-h-elite">Elite Upgrade Program</div>
+            <div class="xmv-item-sub" id="xmv-s-elite">Up to 2 phone upgrades per year — always have the latest device</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="plan-bar" id="mob-plan-bar"></div>
+    <div class="mob-cta">
+      <button class="btn-finalize" onclick="showPrepayModal()"><span id="btn-finalize-lbl">Sign Up — Let's Get Started</span></button>
+      <button class="btn-no-thanks" onclick="goToRecap('no_thanks')"><span id="btn-nothanks-lbl">No Thanks</span></button>
+      <button class="btn-back-mob" onclick="backToResult()">← Back</button>
+      <button class="btn-sm" onclick="restart()">Start over</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ RECAP ══════════════ -->
+<div id="recap-screen" class="screen">
+  <div class="topbar">
+    <div class="topbar-right">Internet Plan Calculator</div>
+  </div>
+  <div class="recap-box">
+    <div class="recap-header">
+      <div class="recap-eyebrow">Session Summary</div>
+      <div class="recap-title" id="recap-outcome-title">Session Recap</div>
+      <div class="recap-outcome-badge" id="recap-outcome-badge"></div>
+    </div>
+
+    <div id="recap-content"></div>
+
+    <!-- REP SUBMISSION SECTION -->
+    <div class="rep-section">
+      <div class="rep-section-head">Rep Information</div>
+      <div class="rep-field">
+        <label class="rep-label">Your Name</label>
+        <input class="rep-input" id="rep-name" type="text" placeholder="Enter your name..." oninput="checkSubmitReady()">
+      </div>
+      <div class="rep-field">
+        <label class="rep-label">Your Store</label>
+        <select class="rep-select" id="rep-store" onchange="checkSubmitReady()">
+          <option value="">— Select your store —</option>
+          <option>Bourbonnais</option>
+          <option>Burbank</option>
+          <option>Cicero</option>
+          <option>Dekalb</option>
+          <option>Elkhart</option>
+          <option>Evanston</option>
+          <option>Evergreen Park</option>
+          <option>Frankfort</option>
+          <option>Glenview</option>
+          <option>Greeneville</option>
+          <option>Hammond</option>
+          <option>Johnson City</option>
+          <option>Kildeer</option>
+          <option>Michigan City</option>
+          <option>Oak Ridge</option>
+          <option>Round Lake Beach</option>
+          <option>Schererville</option>
+          <option>South Bend</option>
+          <option>South Knoxville</option>
+          <option>South Skokie</option>
+          <option>Tinley Park</option>
+          <option>Uptown</option>
+          <option>Valparaiso</option>
+        </select>
+      </div>
+
+      <div class="rep-submit-status" id="rep-submit-status"></div>
+
+      <button class="btn-submit-recap" id="btn-submit-recap" onclick="submitToZapier()" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Submit Session
+      </button>
+      <button class="btn-done" onclick="restart()" style="margin-top:10px;">Start a New Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PREPAY MODAL ══════════════ -->
+<div id="prepay-modal" style="display:none;" onclick="if(event.target===this)closePrepayModal()" style="position:fixed;inset:0;z-index:999;">
+  <div class="modal-overlay" id="prepay-modal">
+    <div class="modal-box">
+      <div class="modal-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#ffb700" stroke-width="2"/>
+          <path d="M12 8v4M12 16h.01" stroke="#ffb700" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="modal-title" id="modal-title-txt">Before We Proceed</div>
+      <div class="modal-sub" id="modal-sub-txt">Please read the following before confirming your order.</div>
+      <div class="modal-disclaimer">
+        <p id="modal-disc-1">Today, you will need to pay a <strong>$25 prepayment</strong> toward your first month's bill to start services with Xfinity.</p>
+        <p id="modal-disc-2">That prepayment will be deducted from your first month's bill.</p>
+        <p id="modal-disc-3">Ask your sales representative for a full breakdown of the bill upon signing up for services.</p>
+      </div>
+      <button class="modal-ack-btn" onclick="acknowledgeAndFinalize()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="4,13 9,18 20,7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="modal-ack-txt">I Acknowledge — Continue</span>
+      </button>
+      <button class="modal-cancel-btn" onclick="closePrepayModal()"><span id="modal-back-txt">← Go Back</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+const S = {
+  answers: {}, step: 0,
+  speed: 'gig', streamSaver: false,
+  carrier: '', mobLines: 1, currentBill: 0, mobMode: 'signup'
+};
+
+/* ══════════════════════════════════
+   PRICING
+══════════════════════════════════ */
+const SPEEDS = [
+  { id:'gig', label:'GIG',  mbps:'1,000 Mbps', display:'1,000', price:60, bestValue:true },
+  { id:'300', label:'300',  mbps:'300 Mbps',   display:'300',   price:40 },
+  { id:'500', label:'500',  mbps:'500 Mbps',   display:'500',   price:50 },
+];
+const NOW_TV=20, SMART_HOME=15, SS_PRICE=15;
+
+// Streaming service prices for savings calculation
+const SVC_PRICES = {
+  'Netflix': 17, 'Hulu': 18, 'Disney+': 14, 'Apple TV+': 10,
+  'Prime Video': 9, 'Peacock': 6, 'HBO Max / Max': 16
+};
+
+// Services included free in the base bundle (no savings to claim — they already have them)
+const BUNDLE_INCLUDED = ['Disney+', 'Hulu', 'Peacock'];
+// Services included in Stream Saver
+const SS_INCLUDED = ['Netflix', 'Apple TV+', 'Peacock'];
+
+function spObj(id){ return SPEEDS.find(s=>s.id===id); }
+function bundleBase(id, includeHome){ const sp=spObj(id); return sp.price+NOW_TV+(includeHome?SMART_HOME:0); }
+function mobPrice(n){ if(n<=0)return 0; return 10+(n-1)*30; }
+
+const CARRIERS=['Verizon','AT&T','T-Mobile','Sprint','Cricket','Metro by T-Mobile','Boost Mobile','US Cellular','Other'];
+
+/* ══════════════════════════════════
+   STREAMING SAVINGS LOGIC
+══════════════════════════════════ */
+function calcStreamingSavings(){
+  const selected = S.answers.svcs || [];
+  const rows = [];
+
+  selected.forEach(svc => {
+    if(svc === 'None') return;
+    // Is this service covered in the base bundle?
+    if(BUNDLE_INCLUDED.includes(svc)){
+      rows.push({ name: svc, price: SVC_PRICES[svc] || 0, source: 'bundle' });
+    }
+    // Is this service covered via Stream Saver (and did they add it)?
+    else if(S.streamSaver && SS_INCLUDED.includes(svc)){
+      rows.push({ name: svc, price: SVC_PRICES[svc] || 0, source: 'streamsaver' });
+    }
+    // Otherwise, not covered — no savings
+  });
+
+  return rows;
+}
+
+/* ══════════════════════════════════
+   QUIZ
+══════════════════════════════════ */
+const Qs = [
+  { id:'lang',    type:'single', cat:'Language / Idioma',  text:'What is your preferred language?\n¿Cuál es tu idioma preferido?', opts:['English','Español'] },
+  { id:'name',    type:'text',   cat:'Welcome',            text:"What is your customer's name?",  textES:"¿Cuál es el nombre de tu cliente?", ph:'Enter their first name...', phES:'Ingresa su nombre...' },
+  { id:'people',  type:'single', cat:'Your Household',     text:'How many people live in your home?',                  opts:['Just me','2 people','3 to 4 people','5 to 6 people','7 or more'] },
+  { id:'usage',   type:'multi',  cat:'How You\'ll Use It', text:'What will you mainly use the internet for?',          opts:['Streaming','Gaming','Schoolwork','Working from home','Smart home devices','Security cameras'], skip:true },
+  { id:'svcs',    type:'multi',  cat:'Your Streaming',     text:'Which streaming services do you currently pay for?',  opts:['Netflix','Hulu','Disney+','Apple TV+','Prime Video','Peacock','HBO Max / Max','Other','None'], skip:true },
+  { id:'devices', type:'single', cat:'Your Devices',       text:'How many devices will you connect to the internet?',  opts:['1 to 3 devices','4 to 5 devices','6 to 12 devices','13 to 20 devices','More than 20'] }
+];
+
+/* ══════════════════════════════════
+   TRANSLATION SYSTEM
+══════════════════════════════════ */
+const ES = {
+  // Quiz - name question translates after language picked
+  "What is your customer's name?": '¿Cuál es el nombre de tu cliente?',
+  'Enter their first name...': 'Ingresa su nombre...',
+  // Speed hero
+  'GIG Plan · 1,000 Mbps download speed': 'Plan GIG · Velocidad de descarga 1,000 Mbps',
+  'Download speed · up to ': 'Velocidad de descarga · hasta ',
+  ' Mbps': ' Mbps',
+  'Unlimited data — never throttled': 'Datos ilimitados — nunca limitados',
+  'xFi Gateway included': 'Gateway xFi incluido',
+  '5-Year Price Lock guaranteed': 'Bloqueo de precio de 5 años garantizado',
+  'Whole-home WiFi coverage': 'Cobertura WiFi en todo el hogar',
+  '5-Year Price Lock': 'Bloqueo de precio 5 años',
+  'Guaranteed rate, no surprises': 'Tarifa garantizada, sin sorpresas',
+  'Unlimited Data': 'Datos Ilimitados',
+  'Never throttled, never capped': 'Nunca limitado, nunca cortado',
+  'xFi Gateway Included': 'Gateway xFi Incluido',
+  'No modem rental fee': 'Sin cargo por renta de módem',
+  'Whole-Home WiFi': 'WiFi en Todo el Hogar',
+  'Full coverage, every room': 'Cobertura total, cada habitación',
+  // Section heads
+  'Streaming & Live TV — all included in your bundle': 'Streaming y TV en vivo — todo incluido',
+  'Live TV — included in your bundle': 'TV en vivo — incluida en tu paquete',
+  'Smart Home Security — included in your bundle': 'Seguridad del hogar — incluida en tu paquete',
+  // Smart home
+  'Smart Home Camera': 'Cámara de Seguridad del Hogar',
+  'Included in your bundle': 'Incluida en tu paquete',
+  '24/7 HD Security': 'Seguridad HD 24/7',
+  '24/7 HD Recording': 'Grabación HD 24/7',
+  'Always watching, always clear': 'Siempre vigilando, siempre nítido',
+  'Two-Way Audio': 'Audio Bidireccional',
+  'Talk & listen from anywhere': 'Habla y escucha desde cualquier lugar',
+  'Night Vision': 'Visión Nocturna',
+  'See clearly in the dark': 'Ve con claridad en la oscuridad',
+  'Cloud Storage': 'Almacenamiento en la Nube',
+  'Footage stored & accessible': 'Grabaciones guardadas y accesibles',
+  // Membership
+  'Watch on any device, anywhere — no cable box needed': 'Mira en cualquier dispositivo, en cualquier lugar',
+  'Up to 10 Account Users': 'Hasta 10 usuarios en la cuenta',
+  'Create profiles for every member of your household with personalized settings': 'Crea perfiles para cada miembro del hogar',
+  // Stream Saver
+  'Optional Add-On': 'Complemento Opcional',
+  'The More You Bundle, The More You Save': 'Cuanto más combinas, más ahorras',
+  'Netflix + Apple TV+ + Peacock Premium — all in one add-on': 'Netflix + Apple TV+ + Peacock Premium — todo en uno',
+  'Standalone cost': 'Costo por separado',
+  'With Xfinity': 'Con Xfinity',
+  'Save $18/mo': 'Ahorra $18/mes',
+  'Add Stream Saver to my plan': 'Agregar Stream Saver a mi plan',
+  'Stream Saver added ✓': 'Stream Saver agregado ✓',
+  '+$15/mo': '+$15/mes',
+  '+$15/mo — added to your plan': '+$15/mes — agregado a tu plan',
+  'Worth $43+ separately': 'Vale $43+ por separado',
+  // Savings callout
+  'The more you bundle, the more you save': 'Cuanto más combinas, más ahorras',
+  'Stream Saver auto-added — you already pay for services it covers': 'Stream Saver agregado automáticamente — ya pagas por servicios que incluye',
+  '✓ included in Gig bundle': '✓ incluido en paquete Gig',
+  '✓ included via Stream Saver': '✓ incluido en Stream Saver',
+  'Services you can cancel': 'Servicios que puedes cancelar',
+  // Footer price block
+  '5-Year Price Lock · No Contract · Unlimited Data': 'Precio fijo 5 años · Sin contrato · Datos ilimitados',
+  'Your monthly total': 'Tu total mensual',
+  // Mobile value card
+  'What You Get with Every Line': 'Lo que obtienes con cada línea',
+  'Your Complete Xfinity Bundle': 'Tu Paquete Completo de Xfinity',
+  'Total Monthly Cost with Xfinity Mobile': 'Costo Mensual Total con Xfinity Mobile',
+  // Best value box
+  '★ Best Value — Switch & Save Big': '★ Mejor Valor — Cambia y Ahorra Más',
+  'Everything below for just ': 'Todo lo siguiente por solo ',
+  'When you add Xfinity Mobile — the savings practically pay for themselves': 'Cuando agregas Xfinity Mobile — los ahorros prácticamente se pagan solos',
+  'Included in 1 Gig Internet — $60/mo': 'Incluido en Internet 1 Gig — $60/mes',
+  'Mbps — Fastest Available': 'Mbps — La más rápida disponible',
+  '4 streaming services included': '4 servicios de streaming incluidos',
+  '24/7 HD security included': 'Seguridad HD 24/7 incluida',
+  'No rate increases, ever': 'Sin aumentos de precio, nunca',
+  'Disney+, Hulu & Peacock alone cost ': 'Disney+, Hulu y Peacock solos cuestan ',
+  " separately — they're all included free with Gig": ' por separado — todos incluidos gratis con Gig',
+  'saved on streaming': 'ahorrado en streaming',
+  'Add Xfinity Mobile & save even more': 'Agrega Xfinity Mobile y ahorra aún más',
+  'Switch your phone lines and the savings on your bill could cover most — or all — of your internet cost': 'Cambia tus líneas y los ahorros podrían cubrir la mayor parte — o todo — tu costo de internet',
+  // Mobile screen  
+  'Side-by-Side Comparison': 'Comparación Lado a Lado',
+  'Your Current Plan': 'Tu Plan Actual',
+  'Switch & Save': 'Cambia y Ahorra',
+  'Xfinity Mobile': 'Xfinity Mobile',
+  'Premium Unlimited': 'Premium Ilimitado',
+  'America\'s most reliable network': 'La red más confiable de EE.UU.',
+  'No annual contract': 'Sin contrato anual',
+  '💰 Estimated Savings — Switching to Xfinity Mobile': '💰 Ahorros Estimados — Al cambiar a Xfinity Mobile',
+  'Per Month': 'Por Mes',
+  'First Year': 'Primer Año',
+  'Your Complete Xfinity Bundle': 'Tu Paquete Completo de Xfinity',
+  '★ Best Value — Gig Internet': '★ Mejor Valor — Internet Gig',
+  'Disney+ · Hulu · Peacock · NOW TV · Smart Home Camera': 'Disney+ · Hulu · Peacock · NOW TV · Cámara de Seguridad',
+  '5-Year Price Lock': 'Precio Fijo 5 Años',
+  'Sign Up — Let\'s Get Started': '¡Inscríbeme — Comencemos!',
+  'No Thanks': 'No, Gracias',
+  '← Back': '← Atrás',
+  'Start over': 'Empezar de nuevo',
+  'Language / Idioma': 'Language / Idioma',
+  'Your Household': 'Tu Hogar',
+  'How You\'ll Use It': 'Cómo lo Usarás',
+  'Your Streaming': 'Tus Servicios',
+  'Your Devices': 'Tus Dispositivos',
+  'How many people live in your home?': '¿Cuántas personas viven en tu hogar?',
+  'What will you mainly use the internet for?': '¿Para qué usarás principalmente el internet?',
+  'Which streaming services do you currently pay for?': '¿Por cuáles servicios de streaming pagas actualmente?',
+  'How many devices will you connect to the internet?': '¿Cuántos dispositivos conectarás al internet?',
+  // Quiz options
+  'Just me': 'Solo yo',
+  '2 people': '2 personas',
+  '3 to 4 people': '3 a 4 personas',
+  '5 to 6 people': '5 a 6 personas',
+  '7 or more': '7 o más',
+  'Streaming': 'Streaming',
+  'Gaming': 'Videojuegos',
+  'Schoolwork': 'Tareas escolares',
+  'Working from home': 'Trabajo desde casa',
+  'Smart home devices': 'Dispositivos del hogar',
+  'Security cameras': 'Cámaras de seguridad',
+  'None': 'Ninguno',
+  'Other': 'Otro',
+  '1 to 3 devices': '1 a 3 dispositivos',
+  '4 to 5 devices': '4 a 5 dispositivos',
+  '6 to 12 devices': '6 a 12 dispositivos',
+  '13 to 20 devices': '13 a 20 dispositivos',
+  'More than 20': 'Más de 20',
+  // Nav buttons
+  'Next →': 'Siguiente →',
+  'See My Plan →': 'Ver Mi Plan →',
+  'Skip': 'Omitir',
+  // Result screen
+  'Everything you need.': 'Todo lo que necesitas.',
+  'One monthly price.': 'Un precio mensual.',
+  'Internet · Live TV · Streaming · Smart Home Security': 'Internet · TV en vivo · Streaming · Seguridad del hogar',
+  'Everything in your bundle': 'Todo en tu paquete',
+  "Here's what you're getting": 'Esto es lo que obtienes',
+  'Built for your household': 'Diseñado para tu hogar',
+  'Smart Upgrade — Saves You Money': 'Actualización inteligente — Ahorra dinero',
+  'Streaming & Live TV — all included in your bundle': 'Streaming y TV en vivo — todo incluido',
+  'Live TV — included in your bundle': 'TV en vivo — incluido en tu paquete',
+  'Smart Home Security — included in your bundle': 'Seguridad del hogar — incluida en tu paquete',
+  'Included with every plan': 'Incluido con cada plan',
+  'Xfinity Member Benefits': 'Beneficios para miembros de Xfinity',
+  'Xfinity Stream App': 'App Xfinity Stream',
+  'Watch on any device, anywhere — no cable box needed': 'Mira en cualquier dispositivo, en cualquier lugar',
+  'Advanced Security': 'Seguridad Avanzada',
+  'Built-in xFi Advanced Security protects every device on your network': 'La seguridad avanzada xFi protege cada dispositivo',
+  'Xfinity WiFi Hotspots': 'Puntos de acceso WiFi de Xfinity',
+  'Access millions of Xfinity hotspots nationwide — always connected': 'Accede a millones de puntos de acceso en todo el país',
+  'Up to 10 Account Users': 'Hasta 10 usuarios en la cuenta',
+  'Create profiles for every member of your household with personalized settings': 'Crea perfiles para cada miembro del hogar',
+  // Stream Saver
+  'Optional Add-On': 'Complemento opcional',
+  'Upgrade with NOW Stream Saver': 'Mejora con NOW Stream Saver',
+  'The More You Bundle, The More You Save': 'Cuanto más combinas, más ahorras',
+  'NOW Stream Saver': 'NOW Stream Saver',
+  'Netflix + Apple TV+ + Peacock Premium — all in one add-on': 'Netflix + Apple TV+ + Peacock Premium — todo en uno',
+  'Add Stream Saver to my plan': 'Agregar Stream Saver a mi plan',
+  'Stream Saver added ✓': 'Stream Saver agregado ✓',
+  'Standalone cost': 'Costo por separado',
+  'With Xfinity': 'Con Xfinity',
+  // Footer
+  'Your monthly total': 'Tu total mensual',
+  '5-Year Price Lock · No Contract · Unlimited Data': 'Bloqueo de precio 5 años · Sin contrato · Datos ilimitados',
+  "I'm Ready — Sign Me Up": 'Estoy listo — Inscríbeme',
+  'Explore Other Options': 'Explorar otras opciones',
+  '← Start over': '← Empezar de nuevo',
+  // Mobile screen
+  'Almost done!': '¡Casi listo!',
+  'Best Value': 'Mejor valor',
+  "One last step — let's talk about your phone bill": 'Último paso — hablemos de tu factura telefónica',
+  "Let's compare your current phone bill": 'Comparemos tu factura telefónica actual',
+  'Xfinity Mobile runs on America\'s most reliable network — Xfinity internet customers save the most.': 'Xfinity Mobile funciona en la red más confiable de EE.UU. — los clientes de Xfinity internet ahorran más.',
+  'Your current carrier': 'Tu operador actual',
+  'Who do you currently have your cell service with?': '¿Con quién tienes tu servicio celular actualmente?',
+  'Lines on your account': 'Líneas en tu cuenta',
+  'Your current bill': 'Tu factura actual',
+  'What is your current monthly cell phone bill?': '¿Cuánto es tu factura mensual de celular?',
+  'What You Get with Every Line': 'Lo que obtienes con cada línea',
+  'Xfinity Mobile Premium Unlimited': 'Xfinity Mobile Premium Ilimitado',
+  '100 GB Priority Data': '100 GB de datos prioritarios',
+  'High-speed prioritized data every month': 'Datos prioritarios de alta velocidad cada mes',
+  '30 GB Mobile Hotspot': '30 GB de punto de acceso móvil',
+  'High-speed personal hotspot data': 'Datos de hotspot personal de alta velocidad',
+  '4K UHD Streaming': 'Streaming en 4K UHD',
+  'Crystal-clear video on any screen': 'Video cristalino en cualquier pantalla',
+  'Xfinity Call Guard': 'Xfinity Call Guard',
+  'Built-in spam & scam call protection': 'Protección integrada contra llamadas spam',
+  '215+ International Destinations': 'Más de 215 destinos internacionales',
+  'Talk, text & data worldwide': 'Habla, envía mensajes y usa datos en todo el mundo',
+  'WiFi PowerBoost': 'WiFi PowerBoost',
+  'Up to 1 Gig speeds at home & on the go': 'Hasta 1 Gig de velocidad en casa y en movimiento',
+  'Elite Upgrade Program': 'Programa Elite de Actualización',
+  'Up to 2 phone upgrades per year — always have the latest device': 'Hasta 2 actualizaciones de teléfono al año',
+  'Sign Up — Let\'s Get Started': 'Inscríbeme — ¡Comencemos!',
+  'No Thanks': 'No, gracias',
+  '← Back': '← Atrás',
+  'Start over': 'Empezar de nuevo',
+  // Disclaimer
+  'Before We Proceed': 'Antes de continuar',
+  'Please read the following before confirming your order.': 'Por favor lee lo siguiente antes de confirmar tu pedido.',
+  'I Acknowledge — Continue': 'Acepto — Continuar',
+  '← Go Back': '← Regresar',
+};
+
+// Returns translated string if Spanish selected, else original
+function t(str){
+  if((S.answers.lang||'English')==='Español' && ES[str]) return ES[str];
+  return str;
+}
+// Translate an array of strings
+function ta(arr){ return arr.map(s=>t(s)); }
+
+function renderQuiz(animate=true){
+  const pct=((S.step+1)/Qs.length*100).toFixed(1);
+  document.getElementById('q-progress').style.width=pct+'%';
+  const q=Qs[S.step]; const val=S.answers[q.id]; const isLast=S.step===Qs.length-1;
+  const es=(S.answers.lang||'English')==='Español';
+  // Language question always shown bilingually — no translation needed
+  const isLangQ = q.id==='lang';
+  const qText = (es && q.textES) ? q.textES : (isLangQ ? q.text.replace('\n', '<br><br>') : t(q.text));
+  const qCat  = isLangQ ? q.cat : t(q.cat);
+  let inp='';
+  if(q.type==='text'){
+    const ph = (es && q.phES) ? q.phES : q.ph;
+    inp=`<input class="q-input" id="q-txt" type="text" placeholder="${ph}" value="${val||''}" autocomplete="off">`;
+  } else if(q.type==='single'){
+    const opts = isLangQ ? q.opts : ta(q.opts);
+    const origOpts = q.opts;
+    inp=`<div class="single-opts">${opts.map((o,i)=>`
+      <button class="opt-card${val===origOpts[i]?' sel':''}" onclick="pickS('${q.id}','${esc(origOpts[i])}')">
+        <span class="opt-radio"><span class="opt-radio-dot"></span></span>${o}
+      </button>`).join('')}</div>`;
+  } else {
+    const sel=val||[];
+    const opts = ta(q.opts);
+    const origOpts = q.opts;
+    inp=`<div class="chip-opts">${opts.map((o,i)=>`
+      <button class="chip${sel.includes(origOpts[i])?' sel':''}" onclick="pickM('${q.id}','${esc(origOpts[i])}')">${o}</button>`).join('')}</div>`;
+  }
+  const area=document.getElementById('q-area');
+  const nextLabel = isLast ? t('See My Plan →') : t('Next →');
+  area.innerHTML=`
+    <div class="q-step-label">${qCat}</div>
+    <div class="q-text">${qText}</div>
+    ${inp}
+    <div class="q-nav">
+      ${S.step>0?`<button class="btn-back-q" onclick="qBack()">←</button>`:''}
+      <button class="btn-next-q" id="bnxt" onclick="qNext()" ${canGo()?'':'disabled'}>${nextLabel}</button>
+      ${q.skip?`<button class="btn-skip-q" onclick="qSkip()">${t('Skip')}</button>`:''}
+    </div>`;
+  area.classList.remove('fade-in'); void area.offsetWidth; if(animate) area.classList.add('fade-in');
+  if(q.type==='text'){
+    const i=document.getElementById('q-txt');
+    i.addEventListener('input',e=>{ S.answers[q.id]=e.target.value.trim(); document.getElementById('bnxt').disabled=!canGo(); });
+    i.addEventListener('keydown',e=>{ if(e.key==='Enter'&&canGo())qNext(); });
+    i.focus();
+  }
+}
+
+function esc(s){ return s.replace(/'/g,"\\'"); }
+function canGo(){ const q=Qs[S.step],v=S.answers[q.id]; if(q.type==='text')return v&&v.trim().length>0; if(q.type==='single')return!!v; return true; }
+function pickS(id,val){ S.answers[id]=val; renderQuiz(false); }
+function pickM(id,val){ let a=S.answers[id]||[]; a=a.includes(val)?a.filter(x=>x!==val):[...a,val]; S.answers[id]=a; renderQuiz(false); }
+function qSkip(){ S.step++; if(S.step>=Qs.length)showResult(); else renderQuiz(); }
+function qBack(){ S.step--; renderQuiz(); }
+function qNext(){
+  const q=Qs[S.step];
+  if(q.type==='text') S.answers[q.id]=(document.getElementById('q-txt')||{}).value?.trim()||S.answers[q.id]||'';
+  S.step++;
+  if(S.step>=Qs.length) showResult(); else renderQuiz();
+}
+
+/* ══════════════════════════════════
+   SPEED LOGIC
+══════════════════════════════════ */
+function recSpeed(){
+  const v=S.answers.devices||'';
+  const svcs=S.answers.svcs||[];
+  // If customer already pays for Disney+ or Hulu, Gig is cheaper due to bundle savings
+  const hasGigSavings = svcs.includes('Disney+') || svcs.includes('Hulu');
+  if(hasGigSavings) return 'gig';
+  if(v==='1 to 3 devices') return '300';
+  if(v==='4 to 5 devices') return '500';
+  return 'gig';
+}
+
+/* ══════════════════════════════════
+   RESULT
+══════════════════════════════════ */
+function showResult(){
+  S.speed=recSpeed();
+  // Auto-enable Stream Saver if customer already pays for Netflix or Apple TV+
+  // (Stream Saver includes both — paying separately costs more)
+  const svcs=S.answers.svcs||[];
+  S.streamSaver = svcs.includes('Netflix') || svcs.includes('Apple TV+');
+  document.getElementById('quiz-screen').classList.remove('active');
+  document.getElementById('result-screen').classList.add('active');
+  renderResult();
+}
+
+function renderResult(){
+  const sp=spObj(S.speed);
+  const name=S.answers.name||'';
+  const base=bundleBase(S.speed,true);
+  const ss=S.streamSaver?SS_PRICE:0;
+  const total=base+ss;
+
+  // Greeting
+  const es = (S.answers.lang||'English')==='Español';
+  document.getElementById('r-greeting').textContent=name
+    ? (es ? `Tu Plan Personalizado, ${name}` : `Your Personalized Plan, ${name}`)
+    : (es ? 'Tu Plan Personalizado de Xfinity' : 'Your Personalized Xfinity Plan');
+
+  // Hero price
+  document.getElementById('hero-price').textContent=total;
+
+  // Speed pills
+  document.getElementById('speed-pills').innerHTML=SPEEDS.map(s=>`
+    <button class="speed-pill${s.id===S.speed?' active':''}${s.bestValue?' pill-best':''}" onclick="setSpd('${s.id}')">
+      ${s.bestValue?`<span class="pill-best-badge">★ ${es?'Mejor Valor':'Best Value'}</span>`:''}
+      ${s.id==='gig'?'GIG <span class="pill-speed-sub">1,000 Mbps · $'+( s.price+NOW_TV+SMART_HOME)+'/mo</span>':s.label+' <span class="speed-pill-sub">Mbps · $'+(s.price+NOW_TV+SMART_HOME)+'/mo</span>'}
+    </button>`).join('');
+
+  // ── BUILD THE INCLUDES SECTION ──
+  renderIncludes();
+
+  // Apply language translations
+  applyTranslations();
+
+  // Stream Saver toggle state
+  const tb=document.getElementById('ss-toggle-btn');
+  const tl=document.getElementById('ss-toggle-label');
+  const ts=document.getElementById('ss-toggle-sub');
+  if(S.streamSaver){
+    tb.classList.add('on');
+    tl.textContent=t('Stream Saver added ✓');
+    ts.textContent=t('+$15/mo — added to your plan');
+  } else {
+    tb.classList.remove('on');
+    tl.textContent=t('Add Stream Saver to my plan');
+    ts.textContent=t('+$15/mo');
+  }
+
+  // Streaming savings
+  renderStreamingSavings();
+}
+
+/* ══════════════════════════════════
+   PERSONALIZED INCLUDES SECTION
+══════════════════════════════════ */
+function renderIncludes(){
+  const sp   = spObj(S.speed);
+  const usage = S.answers.usage || [];
+  const devs  = S.answers.devices || '';
+  const name  = S.answers.name || '';
+  const people= S.answers.people || '';
+
+  // ── PERSONALIZED HEADLINE ──
+  const es = (S.answers.lang||'English')==='Español';
+  const usageMap = {
+    'Streaming':          es?'streaming de películas y series':'streaming movies and shows',
+    'Gaming':             es?'videojuegos en línea':'gaming online',
+    'Schoolwork':         es?'tareas escolares':'schoolwork',
+    'Working from home':  es?'trabajo desde casa':'working from home',
+    'Smart home devices': es?'dispositivos del hogar':'smart home devices',
+    'Security cameras':   es?'cámaras de seguridad':'security cameras'
+  };
+  const usagePhrases = usage.filter(u=>usageMap[u]).map(u=>usageMap[u]);
+  const devNumMap = {
+    '1 to 3 devices':     es?'hasta 3':'up to 3',
+    '4 to 5 devices':     es?'hasta 5':'up to 5',
+    '6 to 12 devices':    es?'hasta 12':'up to 12',
+    '13 to 20 devices':   es?'hasta 20':'up to 20',
+    'More than 20 devices':'20+'
+  };
+  const devNum = devNumMap[devs] || '';
+  const svcs = S.answers.svcs || [];
+  const hasDisney = svcs.includes('Disney+');
+  const hasHulu   = svcs.includes('Hulu');
+  const wasUpgraded = (hasDisney || hasHulu) && S.speed === 'gig';
+  const savingsServices = [hasDisney&&'Disney+', hasHulu&&'Hulu'].filter(Boolean);
+  const savingsTotal = (hasDisney?14:0)+(hasHulu?18:0);
+  let savingsBanner = '';
+  if(wasUpgraded){
+    const svcList = savingsServices.join(es?' y ':' and ');
+    const peopleMap = {
+      'Just me': null,
+      '2 people':      es?'1 otra persona':'1 other person',
+      '3 to 4 people': es?'2–3 otras personas':'2–3 other people',
+      '5 to 6 people': es?'4–5 otras personas':'4–5 other people',
+      '7 or more':     es?'6 o más otras personas':'6 or more other people'
+    };
+    const householdPhrase = peopleMap[people] || null;
+    savingsBanner = `
+      <div class="personalized-banner" style="border-color:rgba(0,212,106,0.3);background:linear-gradient(90deg,rgba(0,212,106,0.08),rgba(0,212,106,0.02));">
+        <div class="pb-eyebrow" style="color:var(--green);">${es?'Actualización inteligente — ahorra dinero':'Smart upgrade — saves you money'}</div>
+        <div class="pb-headline">${es?'Gig es más económico para ti':'Gig is actually cheaper for you'}${name?', '+name:''}.</div>
+        <div class="pb-body">
+          ${es
+            ?`Ya pagas por <strong>${svcList}</strong> — incluidos gratis con el plan Gig. Eso son <strong style="color:var(--green);">$${savingsTotal}/mes de vuelta en tu bolsillo</strong>, haciendo este el plan más rentable para ti${householdPhrase?' y las <strong>'+householdPhrase+'</strong>':''} en tu hogar.`
+            :`You already pay for <strong>${svcList}</strong> — those are included free with the Gig plan. That's <strong style="color:var(--green);">$${savingsTotal}/mo back in your pocket</strong>, making this the most cost-effective plan for you${householdPhrase?' and the <strong>'+householdPhrase+'</strong>':''} in your household.`}
+        </div>
+      </div>`;
+  }
+  const andWord = es?' y ':' and ';
+  let usageStr = '';
+  if(usagePhrases.length===1) usageStr=usagePhrases[0];
+  else if(usagePhrases.length===2) usageStr=usagePhrases.join(andWord);
+  else if(usagePhrases.length>2) usageStr=usagePhrases.slice(0,-1).join(', ')+', '+andWord.trim()+' '+usagePhrases[usagePhrases.length-1];
+  const builtFor = es?'Diseñado para tu hogar':'Built for your household';
+  let banner='';
+  if(usageStr && devNum){
+    banner=`
+      <div class="personalized-banner">
+        <div class="pb-eyebrow">${builtFor}</div>
+        <div class="pb-headline">${es?'Perfecto para':'Perfect for'} ${usageStr}${name?' '+name:''}.</div>
+        <div class="pb-body">
+          ${es
+            ?`Con <strong>${sp.display} Mbps</strong>, puedes conectar <strong>${devNum} dispositivos</strong> al mismo tiempo — sin interrupciones${people&&people!=='Just me'?', ya sea que todos estén trabajando, jugando o viendo series':''}.`
+            :`With <strong>${sp.display} Mbps</strong>, you can connect <strong>${devNum} devices</strong> at the same time — with no buffering, no lag${people&&people!=='Just me'?', whether everyone\'s working, gaming, or binge-watching at once':''}.`}
+        </div>
+      </div>`;
+  } else if(usageStr){
+    banner=`
+      <div class="personalized-banner">
+        <div class="pb-eyebrow">${builtFor}</div>
+        <div class="pb-headline">${es?'Perfecto para':'Perfect for'} ${usageStr}${name?' '+name:''}.</div>
+        <div class="pb-body">${es?`Con <strong>${sp.display} Mbps</strong>, tu conexión es suficientemente rápida para manejarlo todo.`:`At <strong>${sp.display} Mbps</strong>, your connection handles everything at once — with speed to spare.`}</div>
+      </div>`;
+  } else if(devNum){
+    banner=`
+      <div class="personalized-banner">
+        <div class="pb-eyebrow">${builtFor}</div>
+        <div class="pb-headline">${es?`Maneja todos los <strong>${devNum} dispositivos</strong> con facilidad`:`Handles all <strong>${devNum} devices</strong> with ease`}${name?', '+name:''}.</div>
+        <div class="pb-body">${es?`Con <strong>${sp.display} Mbps</strong>, cada dispositivo funciona sin ralentizar a los demás.`:`At <strong>${sp.display} Mbps</strong>, every device streams, games, and works without slowing each other down.`}</div>
+      </div>`;
+  }
+  // ── SPEED PERKS — feature box tiles ──
+  const speedPerks = [
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`, label:t('5-Year Price Lock'), sub:t('Guaranteed rate, no surprises') },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>`, label:t('Unlimited Data'), sub:t('Never throttled, never capped') },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`, label:t('xFi Gateway Included'), sub:t('No modem rental fee') },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>`, label:t('Whole-Home WiFi'), sub:t('Full coverage, every room') },
+  ];
+
+  // ── LOGO TILES based on speed tier ──
+  let logoSection='';
+  if(S.speed==='gig'){
+    logoSection=`
+      <div class="svc-section-head">Streaming &amp; Live TV — all included in your bundle</div>
+      <div class="logo-grid logo-grid-4">
+        ${LOGO_DISNEY}
+        ${LOGO_HULU}
+        ${LOGO_PEACOCK}
+        ${LOGO_NOWTV}
+      </div>
+      <div class="svc-section-head">Smart Home Security — included in your bundle</div>
+      <div class="logo-grid logo-grid-2">
+        ${LOGO_SMARTHOME}
+        ${LOGO_SMARTHOME_DESC}
+      </div>`;
+  } else {
+    logoSection=`
+      <div class="svc-section-head">Live TV — included in your bundle</div>
+      <div class="logo-grid logo-grid-2">
+        ${LOGO_NOWTV}
+        ${LOGO_NOWTV_DESC}
+      </div>
+      <div class="svc-section-head">Smart Home Security — included in your bundle</div>
+      <div class="logo-grid logo-grid-2">
+        ${LOGO_SMARTHOME}
+        ${LOGO_SMARTHOME_DESC}
+      </div>`;
+  }
+
+  // ── MEMBERSHIP PERKS ──
+  const membershipItems = [
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.9)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>`, head:t('Xfinity Stream App'), sub:t('Watch on any device, anywhere — no cable box needed') },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.9)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, head:t('Advanced Security'), sub:t('Built-in xFi Advanced Security protects every device on your network') },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.9)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>`, head:t('Xfinity WiFi Hotspots'), sub:t('Access millions of Xfinity hotspots nationwide — always connected') },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="rgba(160,100,255,0.9)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`, head:t('Up to 10 Account Users'), sub:t('Create profiles for every member of your household with personalized settings') },
+  ];
+
+  const inner = document.getElementById('includes-inner');
+  inner.innerHTML = `
+    <div class="section-eyebrow">${t('Everything in your bundle')}</div>
+    <div class="section-title" id="section-title-dyn">${t("Here's what you're getting")}</div>
+
+    ${savingsBanner ? '' : banner}
+
+    <div class="speed-hero-new">
+      <div class="shn-centered-top">
+        <div class="shn-speed-wrap-center">
+          <div class="shn-num">${sp.display}</div>
+          <div class="shn-unit">Mbps</div>
+        </div>
+        <div class="shn-tagline-center">${S.speed==='gig'?'GIG Plan · 1,000 Mbps download speed':'Download speed · up to '+sp.display+' Mbps'}</div>
+      </div>
+      <div class="shn-feature-boxes">
+        ${speedPerks.map(p=>`
+          <div class="shn-feature-box">
+            <div class="shn-feature-icon">${p.icon}</div>
+            <div class="shn-feature-label">${p.label}</div>
+            <div class="shn-feature-sub">${p.sub}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    ${savingsBanner ? banner + savingsBanner : banner}
+
+    ${logoSection}
+
+    <div class="membership-section">
+      <div class="membership-head">
+        <div class="membership-xicon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <line x1="5" y1="5" x2="19" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <line x1="19" y1="5" x2="5" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="membership-eyebrow">${t('Included with every plan')}</div>
+          <div class="membership-title">${t('Xfinity Member Benefits')}</div>
+        </div>
+      </div>
+      <div class="membership-grid">
+        ${membershipItems.map(m=>`
+          <div class="mg-item">
+            <div class="mg-icon">${m.icon}</div>
+            <div><div class="mg-head">${m.head}</div><div class="mg-sub">${m.sub}</div></div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+/* ── LOGO SVG TILES ── */
+const LOGO_DISNEY = `
+  <div class="logo-card lc-disney">
+    <svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
+      <text x="8" y="56" font-family="Georgia,'Times New Roman',serif" font-size="56" font-weight="bold" fill="#FFFFFF" letter-spacing="-1">Disney</text>
+      <text x="172" y="36" font-family="Arial,sans-serif" font-size="40" font-weight="900" fill="#64C8FF">+</text>
+    </svg>
+    <div class="logo-card-name">Disney+</div>
+  </div>`;
+
+const LOGO_HULU = `
+  <div class="logo-card lc-hulu">
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <text x="6" y="50" font-family="Arial,Helvetica,sans-serif" font-size="52" font-weight="900" fill="#000000" letter-spacing="-1">hulu</text>
+    </svg>
+    <div class="logo-card-name">Hulu</div>
+  </div>`;
+
+const LOGO_PEACOCK = `
+  <div class="logo-card lc-peacock">
+    <svg viewBox="0 0 200 72" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(18,42)">
+        <line x1="0" y1="0" x2="0"   y2="-28" stroke="#E8B020" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="20"  y2="-20" stroke="#1565C0" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="28"  y2="0"   stroke="#2E7D32" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="-20" y2="-20" stroke="#C62828" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="-28" y2="0"   stroke="#7B1FA2" stroke-width="4.5" stroke-linecap="round"/>
+        <circle cx="0"   cy="-28" r="5.5" fill="#E8B020"/>
+        <circle cx="20"  cy="-20" r="5.5" fill="#1565C0"/>
+        <circle cx="28"  cy="0"   r="5.5" fill="#2E7D32"/>
+        <circle cx="-20" cy="-20" r="5.5" fill="#C62828"/>
+        <circle cx="-28" cy="0"   r="5.5" fill="#7B1FA2"/>
+      </g>
+      <text x="60" y="50" font-family="Arial,sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" letter-spacing="0.5">Peacock</text>
+    </svg>
+    <div class="logo-card-name">Peacock</div>
+  </div>`;
+
+const LOGO_NOWTV = `
+  <div class="logo-card lc-nowtv">
+    <svg viewBox="0 0 200 72" xmlns="http://www.w3.org/2000/svg">
+      <text x="8" y="58" font-family="Arial Narrow,Arial,sans-serif" font-size="62" font-weight="900" fill="#FFFFFF" letter-spacing="-2">NOW</text>
+      <text x="134" y="58" font-family="Arial Narrow,Arial,sans-serif" font-size="62" font-weight="900" fill="#00d46a" letter-spacing="-2">TV</text>
+    </svg>
+    <div class="logo-card-name">NOW TV — 125+ Live Channels</div>
+  </div>`;
+
+// For 300/500 plans: a second tile explaining NOW TV value
+const LOGO_NOWTV_DESC = `
+  <div class="logo-card" style="background:linear-gradient(135deg,#0a0a0a,#131320);border:1px solid rgba(0,212,106,0.2);justify-content:flex-start;padding:20px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">What's included</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.75);"><div style="width:5px;height:5px;border-radius:50%;background:#00d46a;flex-shrink:0;"></div>125+ live TV channels</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.75);"><div style="width:5px;height:5px;border-radius:50%;background:#00d46a;flex-shrink:0;"></div>Live sports &amp; news</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.75);"><div style="width:5px;height:5px;border-radius:50%;background:#00d46a;flex-shrink:0;"></div>20-hr cloud DVR</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.75);"><div style="width:5px;height:5px;border-radius:50%;background:#00d46a;flex-shrink:0;"></div>Watch anywhere, any device</div>
+    </div>
+  </div>`;
+
+/* Smart Home Camera logo card — matches NOWTV style */
+const LOGO_SMARTHOME = `
+  <div class="logo-card" style="background:linear-gradient(145deg,#0d1a2e,#08101e);border:1px solid rgba(74,158,255,0.25);align-items:center;justify-content:center;padding:24px 16px;">
+    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:75%;max-height:60px;margin-bottom:12px;">
+      <polygon points="100,8 28,48 36,48 36,72 164,72 164,48 172,48" fill="none" stroke="#4a9eff" stroke-width="5" stroke-linejoin="round"/>
+      <rect x="84" y="50" width="32" height="22" rx="3" fill="none" stroke="#4a9eff" stroke-width="4"/>
+      <circle cx="155" cy="30" r="10" fill="none" stroke="#e60000" stroke-width="3.5"/>
+      <circle cx="155" cy="30" r="4" fill="#e60000"/>
+      <path d="M130,16 Q143,6 155,16" fill="none" stroke="#e60000" stroke-width="3" stroke-linecap="round"/>
+      <path d="M137,22 Q146,15 155,22" fill="none" stroke="#e60000" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:rgba(255,255,255,0.8);text-align:center;margin-bottom:3px;">Smart Home Camera</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">Included in your bundle</div>
+  </div>`;
+
+const LOGO_SMARTHOME_DESC = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div class="shn-feature-box" style="background:rgba(74,158,255,0.06);border-color:rgba(74,158,255,0.2);">
+      <div class="shn-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></div>
+      <div class="shn-feature-label" style="color:var(--white);">24/7 HD Recording</div>
+      <div class="shn-feature-sub">Always watching, always clear</div>
+    </div>
+    <div class="shn-feature-box" style="background:rgba(74,158,255,0.06);border-color:rgba(74,158,255,0.2);">
+      <div class="shn-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <div class="shn-feature-label" style="color:var(--white);">Two-Way Audio</div>
+      <div class="shn-feature-sub">Talk &amp; listen from anywhere</div>
+    </div>
+    <div class="shn-feature-box" style="background:rgba(74,158,255,0.06);border-color:rgba(74,158,255,0.2);">
+      <div class="shn-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2"><path d="M12 3a6 6 0 00-6 6c0 7 6 11 6 11s6-4 6-11a6 6 0 00-6-6z"/><circle cx="12" cy="9" r="2"/></svg></div>
+      <div class="shn-feature-label" style="color:var(--white);">Night Vision</div>
+      <div class="shn-feature-sub">See clearly in the dark</div>
+    </div>
+    <div class="shn-feature-box" style="background:rgba(74,158,255,0.06);border-color:rgba(74,158,255,0.2);">
+      <div class="shn-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+      <div class="shn-feature-label" style="color:var(--white);">Cloud Storage</div>
+      <div class="shn-feature-sub">Footage stored &amp; accessible</div>
+    </div>
+  </div>`;
+
+
+function renderStreamingSavings(){
+  const box=document.getElementById('streaming-savings-box');
+  if(S.speed !== 'gig'){ box.style.display='none'; return; }
+  const rows=calcStreamingSavings();
+  if(rows.length===0){ box.style.display='none'; return; }
+
+  const totalSavings=rows.reduce((s,r)=>s+r.price,0);
+  const svcs=S.answers.svcs||[];
+  const autoEnabled = S.streamSaver && (svcs.includes('Netflix')||svcs.includes('Apple TV+'));
+  const streamSaverSavings = rows.filter(r=>r.source==='streamsaver').reduce((s,r)=>s+r.price,0);
+  const bundleSavings = rows.filter(r=>r.source==='bundle').reduce((s,r)=>s+r.price,0);
+
+  box.style.display='block';
+  box.innerHTML=`
+    <div class="savings-callout">
+      ${autoEnabled?`
+        <div class="ss-auto-notice">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><polyline points="4,13 9,18 20,7" stroke="#ffb700" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ${t('Stream Saver auto-added — you already pay for services it covers')}
+        </div>`:''}
+      <div class="svc-save-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="4,13 9,18 20,7" stroke="#00d46a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ${t('The more you bundle, the more you save')}
+      </div>
+      <div class="svc-save-rows">
+        ${rows.map(r=>`
+          <div class="svc-save-row">
+            <span>${r.name}
+              <span style="font-size:11px;color:var(--muted)">
+                ${r.source==='bundle'?t('✓ included in Gig bundle'):t('✓ included via Stream Saver')}
+              </span>
+            </span>
+            <span class="svc-save-val">$${r.price}/mo</span>
+          </div>`).join('')}
+      </div>
+      <div class="svc-save-total-row">
+        <div>
+          <div class="svc-save-total-label">${t('Services you can cancel')}</div>
+          ${streamSaverSavings>0&&bundleSavings>0?`<div style="font-size:11px;color:var(--muted);margin-top:2px;">Bundle: $${bundleSavings}/mo + Stream Saver: $${streamSaverSavings}/mo</div>`:''}
+        </div>
+        <span class="svc-save-total-val">$${totalSavings}/mo</span>
+      </div>
+    </div>`;
+}
+
+function scrollToTop(){ window.scrollTo({top:0,behavior:'instant'}); }
+
+/* Apply translations to all static customer-facing elements */
+function applyTranslations(){
+  const es = (S.answers.lang||'English')==='Español';
+  // Result screen hero
+  const hl=document.getElementById('r-headline');
+  if(hl) hl.innerHTML=`${t('Everything you need.')}<em>${t('One monthly price.')}</em>`;
+  const st=document.getElementById('r-subtext');
+  if(st) st.textContent=t('Internet · Live TV · Streaming · Smart Home Security');
+  // CTA footer buttons
+  const bs=document.getElementById('btn-signup-lbl');
+  if(bs) bs.textContent=t("I'm Ready — Sign Me Up");
+  const bo=document.getElementById('btn-other-lbl');
+  if(bo) bo.textContent=t('Explore Other Options');
+  const bso=document.getElementById('btn-startover-lbl');
+  if(bso) bso.textContent=t('← Start over');
+  // Footer price lock line
+  const fpl=document.getElementById('footer-price-lock-txt');
+  if(fpl) fpl.textContent=t('5-Year Price Lock · No Contract · Unlimited Data');
+  const fplbl=document.getElementById('footer-price-label-txt');
+  if(fplbl) fplbl.textContent=t('Your monthly total');
+  // Stream Saver card
+  const ssTitle=document.getElementById('ss-bundle-title-txt');
+  if(ssTitle) ssTitle.textContent=t('NOW Stream Saver');
+  const ssSub=document.getElementById('ss-bundle-sub-txt');
+  if(ssSub) ssSub.textContent=t('Netflix + Apple TV+ + Peacock Premium — all in one add-on');
+  const ssStandalone=document.getElementById('ss-standalone-lbl');
+  if(ssStandalone) ssStandalone.textContent=t('Standalone cost');
+  const ssXfinity=document.getElementById('ss-xfinity-lbl');
+  if(ssXfinity) ssXfinity.textContent=t('With Xfinity');
+  const ssSave=document.getElementById('ss-save-txt');
+  if(ssSave) ssSave.textContent=t('Save $18/mo');
+  const ssEyebrow=document.getElementById('ss-bundle-eyebrow-txt');
+  if(ssEyebrow) ssEyebrow.textContent=t('The More You Bundle, The More You Save');
+  // XM value card
+  const xmEy=document.getElementById('xmv-eyebrow-txt');
+  if(xmEy) xmEy.textContent=t('What You Get with Every Line');
+  const xmTi=document.getElementById('xmv-title-txt');
+  if(xmTi) xmTi.textContent=t('Xfinity Mobile Premium Unlimited');
+  const xmItems={
+    'xmv-h-100gb':['100 GB Priority Data','100 GB de datos prioritarios'],
+    'xmv-s-100gb':['High-speed prioritized data every month','Datos prioritarios de alta velocidad cada mes'],
+    'xmv-h-hotspot':['30 GB Mobile Hotspot','30 GB de punto de acceso móvil'],
+    'xmv-s-hotspot':['High-speed personal hotspot data','Datos de hotspot personal de alta velocidad'],
+    'xmv-h-4k':['4K UHD Streaming','Streaming en 4K UHD'],
+    'xmv-s-4k':['Crystal-clear video on any screen','Video cristalino en cualquier pantalla'],
+    'xmv-h-cg':['Xfinity Call Guard','Xfinity Call Guard'],
+    'xmv-s-cg':['Built-in spam & scam call protection','Protección integrada contra llamadas spam'],
+    'xmv-h-intl':['215+ International Destinations','Más de 215 destinos internacionales'],
+    'xmv-s-intl':['Talk, text & data worldwide','Habla, envía mensajes y usa datos en todo el mundo'],
+    'xmv-h-wb':['WiFi PowerBoost','WiFi PowerBoost'],
+    'xmv-s-wb':['Up to 1 Gig speeds at home & on the go','Hasta 1 Gig de velocidad en casa y en movimiento'],
+    'xmv-h-elite':['Elite Upgrade Program','Programa Elite de Actualización'],
+    'xmv-s-elite':['Up to 2 phone upgrades per year — always have the latest device','Hasta 2 actualizaciones de teléfono al año'],
+  };
+  for(const [id,[en,sp]] of Object.entries(xmItems)){
+    const el=document.getElementById(id);
+    if(el) el.textContent=es?sp:en;
+  }
+  // Comparison card
+  const compTitle=document.getElementById('comp-head-title-txt');
+  if(compTitle) compTitle.textContent=es?'Comparación Lado a Lado':'Side-by-Side Comparison';
+  const compCurrLbl=document.getElementById('comp-curr-lbl');
+  if(compCurrLbl) compCurrLbl.textContent=es?'Tu Plan Actual':'Your Current Plan';
+  const compXmLbl=document.getElementById('comp-xm-lbl');
+  if(compXmLbl) compXmLbl.textContent=es?'Cambia y Ahorra':'Switch & Save';
+  const compXmName=document.getElementById('comp-xm-name');
+  if(compXmName) compXmName.textContent='Xfinity Mobile';
+  // Mobile screen static text
+  const ms=document.getElementById('mob-sub-text');
+  if(ms) ms.textContent=t("Xfinity Mobile runs on America's most reliable network — Xfinity internet customers save the most.");
+  const mcl=document.getElementById('mob-carrier-label');
+  if(mcl) mcl.textContent=t('Your current carrier');
+  const mct=document.getElementById('mob-carrier-title');
+  if(mct) mct.textContent=t('Who do you currently have your cell service with?');
+  const mll=document.getElementById('mob-lines-label');
+  if(mll) mll.textContent=t('Lines on your account');
+  const mbl=document.getElementById('mob-bill-label');
+  if(mbl) mbl.textContent=t('Your current bill');
+  const mbt=document.getElementById('mob-bill-title');
+  if(mbt) mbt.textContent=t('What is your current monthly cell phone bill?');
+  // Mobile CTA buttons
+  const bf=document.getElementById('btn-finalize-lbl');
+  if(bf) bf.textContent=t("Sign Up — Let's Get Started");
+  const bn=document.getElementById('btn-nothanks-lbl');
+  if(bn) bn.textContent=t('No Thanks');
+  // Modal
+  const mt=document.getElementById('modal-title-txt');
+  if(mt) mt.textContent=t('Before We Proceed');
+  const msub=document.getElementById('modal-sub-txt');
+  if(msub) msub.textContent=t('Please read the following before confirming your order.');
+  const mack=document.getElementById('modal-ack-txt');
+  if(mack) mack.textContent=t('I Acknowledge — Continue');
+  const mgb=document.getElementById('modal-back-txt');
+  if(mgb) mgb.textContent=t('← Go Back');
+  // Modal disclaimer body
+  const md1=document.getElementById('modal-disc-1');
+  if(md1) md1.innerHTML=es
+    ?'Hoy necesitarás pagar un <strong>prepago de $25</strong> hacia tu primera factura mensual para iniciar los servicios con Xfinity.'
+    :'Today, you will need to pay a <strong>$25 prepayment</strong> toward your first month\'s bill to start services with Xfinity.';
+  const md2=document.getElementById('modal-disc-2');
+  if(md2) md2.textContent=es
+    ?'Ese prepago se deducirá de tu primera factura mensual.'
+    :'That prepayment will be deducted from your first month\'s bill.';
+  const md3=document.getElementById('modal-disc-3');
+  if(md3) md3.textContent=es
+    ?'Pide a tu representante de ventas un desglose completo de la factura al registrarte.'
+    :'Ask your sales representative for a full breakdown of the bill upon signing up for services.';
+}
+
+function setSpd(id){ S.speed=id; renderResult(); }
+
+function toggleSS(){
+  S.streamSaver=!S.streamSaver;
+  renderResult();
+}
+
+/* ══════════════════════════════════
+   MOBILE SCREEN
+══════════════════════════════════ */
+function goMobile(mode){
+  S.mobMode=mode;
+  S.carrier=''; S.mobLines=1; S.currentBill=0;
+  // On Explore path: always quote Gig — it's the best value and maximizes savings pitch
+  if(mode==='explore'){
+    S.exploreSpeed = S.speed;
+    S.speed = 'gig';
+    document.getElementById('mob-eyebrow').textContent=t('Best Value');
+    document.getElementById('mob-title').textContent=t("Let's compare your current phone bill");
+  } else {
+    document.getElementById('mob-eyebrow').textContent=t('Almost done!');
+    document.getElementById('mob-title').textContent=t("One last step — let's talk about your phone bill");
+  }
+  document.getElementById('result-screen').classList.remove('active');
+  document.getElementById('mobile-screen').classList.add('active');
+  scrollToTop();
+  applyTranslations();
+  renderMobScreen();
+}
+
+function renderMobScreen(){
+  document.getElementById('carrier-grid').innerHTML=CARRIERS.map(c=>`
+    <button class="carrier-btn${S.carrier===c?' active':''}" onclick="setCarrier('${c}')">${c}</button>`).join('');
+  document.getElementById('carrier-fill').textContent=S.carrier||'your carrier';
+  document.getElementById('lines-grid').innerHTML=[1,2,3,4,5,6,7,8,9,10].map(n=>`
+    <button class="lines-btn${S.mobLines===n?' active':''}" onclick="setLines(${n})">${n}</button>`).join('');
+  const bi=document.getElementById('bill-inp');
+  if(bi) bi.value=S.currentBill>0?S.currentBill:'';
+  renderMobComparison();
+}
+
+function setCarrier(c){
+  S.carrier=c;
+  document.getElementById('carrier-fill').textContent=c;
+  document.querySelectorAll('.carrier-btn').forEach(b=>b.classList.toggle('active',b.textContent===c));
+  renderMobComparison();
+}
+
+function setLines(n){
+  S.mobLines=n;
+  document.querySelectorAll('.lines-btn').forEach((b,i)=>b.classList.toggle('active',i+1===n));
+  renderMobComparison();
+  renderMobPlanBar();
+}
+
+function renderMobComparison(){
+  const bill=parseFloat(document.getElementById('bill-inp')?.value)||0;
+  S.currentBill=bill;
+  const xmAmt=mobPrice(S.mobLines);
+  const cs=document.getElementById('comp-section');
+  const es=(S.answers.lang||'English')==='Español';
+  if(!S.carrier||bill<=0){ cs.style.display='none'; renderMobPlanBar(); return; }
+  cs.style.display='block';
+  document.getElementById('comp-sub-text').textContent=`${S.carrier} vs. Xfinity Mobile — ${S.mobLines} ${es?(S.mobLines>1?'líneas':'línea'):(S.mobLines>1?'lines':'line')}`;
+  document.getElementById('carrier-col-lbl').textContent=S.carrier;
+  document.getElementById('comp-curr-price').textContent=`$${bill}`;
+  document.getElementById('comp-curr-detail').innerHTML=`<strong>${S.mobLines} ${es?(S.mobLines>1?'líneas':'línea'):(S.mobLines>1?'lines':'line')}</strong> ${es?'con':'with'} ${S.carrier}<br>${es?'Tu costo mensual actual':'Your current monthly cost'}`;
+  document.getElementById('comp-xm-price').textContent=`$${xmAmt}`;
+  document.getElementById('comp-xm-detail').innerHTML=`<strong>${S.mobLines} ${es?(S.mobLines>1?'líneas':'línea'):(S.mobLines>1?'lines':'line')}</strong> ${es?'Premium Ilimitado':'Premium Unlimited'}<br>${es?'La red más confiable de EE.UU.':"America's most reliable network"}<br>${es?'Sin contrato anual':'No annual contract'}`;
+  // Savings card eyebrow
+  const savEyebrow=document.getElementById('sav-eyebrow-txt');
+  if(savEyebrow) savEyebrow.textContent=es?'💰 Ahorros Estimados — Al cambiar a Xfinity Mobile':'💰 Estimated Savings — Switching to Xfinity Mobile';
+  const savMoLbl=document.getElementById('sav-mo-lbl');
+  if(savMoLbl) savMoLbl.textContent=es?'Por Mes':'Per Month';
+  const savYrLbl=document.getElementById('sav-yr-lbl');
+  if(savYrLbl) savYrLbl.textContent=es?'Primer Año':'First Year';
+  const savings=Math.round(bill-xmAmt);
+  const sc=document.getElementById('sav-card');
+  if(savings>0){
+    sc.style.display='block';
+    document.getElementById('sav-mo').textContent=`$${savings}`;
+    document.getElementById('sav-yr').textContent=`$${(savings*12).toLocaleString()}`;
+  } else {
+    sc.style.display='none';
+  }
+  renderMobPlanBar();
+}
+
+function renderMobPlanBar(){
+  const sp=spObj(S.speed);
+  const isExplore=S.mobMode==='explore';
+  const base=bundleBase(S.speed,!isExplore);
+  const ss=S.streamSaver?SS_PRICE:0;
+  const xmAmt=mobPrice(S.mobLines);
+  const total=base+ss+xmAmt;
+  const es=(S.answers.lang||'English')==='Español';
+
+  // Build line items with clear, friendly labels
+  let rows=[];
+  if(isExplore){
+    rows.push({ l:es?`1,000 Mbps Internet Gig`:`1,000 Mbps Gig Internet`, v:`$60` });
+  } else {
+    rows.push({ l:es?`${sp.display} Mbps Internet + Streaming + Cámara de Seguridad`:`${sp.display} Mbps Internet + Streaming Video + Smart Home Camera`, v:`$${sp.price+NOW_TV+SMART_HOME}` });
+  }
+  if(!isExplore && ss>0) rows.push({ l:es?'NOW Stream Saver':'NOW Stream Saver', v:`+$${ss}` });
+  rows.push({ l:es?`Xfinity Mobile — ${S.mobLines} ${S.mobLines>1?'líneas':'línea'} Premium Ilimitado`:`Xfinity Mobile — ${S.mobLines} line${S.mobLines>1?'s':''} Premium Unlimited`, v:`+$${xmAmt}` });
+
+  // Explore total uses just $60 internet + mobile
+  const exploreTotal = isExplore ? 60 + xmAmt : total;
+  const displayTotal = isExplore ? exploreTotal : total;
+
+  const exploreBadge = isExplore ? `
+    <div style="background:linear-gradient(135deg,#0a0014 0%,#100020 100%);border:1px solid rgba(230,0,0,0.3);border-radius:14px;overflow:hidden;margin-bottom:14px;">
+      <div style="padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">
+          ${es?'★ Mejor Valor — Cambia y Ahorra Más':'★ Best Value — Switch &amp; Save Big'}
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--white);line-height:1.1;">
+          ${es?'Todo lo siguiente por solo':'Everything below for just'} <span style="color:var(--red);">$60/mo</span>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:4px;">${es?'Cuando agregas Xfinity Mobile — los ahorros prácticamente se pagan solos':'When you add Xfinity Mobile — the savings practically pay for themselves'}</div>
+      </div>
+      <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;">${es?'Incluido en Internet 1 Gig — $60/mes':'Included in 1 Gig Internet — $60/mo'}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(230,0,0,0.2);border-radius:9px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--white);letter-spacing:-1px;line-height:1;">1,000</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">${es?'Mbps — La más rápida disponible':'Mbps — Fastest Available'}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(230,0,0,0.2);border-radius:9px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--white);line-height:1.2;">Disney+ · Hulu<br>Peacock · NOW TV</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;">${es?'4 servicios de streaming incluidos':'4 streaming services included'}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(230,0,0,0.2);border-radius:9px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--white);">${es?'Cámara de Seguridad del Hogar':'Smart Home Camera'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">${es?'Seguridad HD 24/7 incluida':'24/7 HD security included'}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(230,0,0,0.2);border-radius:9px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--white);">${es?'Precio Fijo 5 Años':'5-Year Price Lock'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">${es?'Sin aumentos de precio, nunca':'No rate increases, ever'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:12px 18px;background:rgba(0,212,106,0.05);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">
+          ${es?'Disney+, Hulu y Peacock solos cuestan <strong style="color:rgba(255,255,255,0.8);">$38/mes</strong> por separado — todos incluidos gratis con Gig':'Disney+, Hulu &amp; Peacock alone cost <strong style="color:rgba(255,255,255,0.8);">$38/mo</strong> separately — they\'re all included free with Gig'}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--green);line-height:1;">$38/mo</div>
+          <div style="font-size:10px;color:var(--green);opacity:0.7;">${es?'ahorrado en streaming':'saved on streaming'}</div>
+        </div>
+      </div>
+      <div style="padding:12px 18px;text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--red);margin-bottom:4px;">${es?'Agrega Xfinity Mobile y ahorra aún más':'Add Xfinity Mobile &amp; save even more'}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);">${es?'Cambia tus líneas y los ahorros podrían cubrir la mayor parte — o todo — tu costo de internet':'Switch your phone lines and the savings on your bill could cover most — or all — of your internet cost'}</div>
+      </div>
+    </div>` : '';
+
+  const noteText = isExplore
+    ? (es?`Incluye internet 1,000 Mbps Gig y ${S.mobLines} ${S.mobLines>1?'líneas':'línea'} móvil`:`Includes 1,000 Mbps Gig internet &amp; ${S.mobLines} mobile line${S.mobLines>1?'s':''}`)
+    : (es?`Incluye internet, streaming${ss>0?', Stream Saver':''} y ${S.mobLines} ${S.mobLines>1?'líneas':'línea'} móvil`:`Includes internet, streaming video${ss>0?', Stream Saver':''} &amp; ${S.mobLines} mobile line${S.mobLines>1?'s':''}`);
+
+  document.getElementById('mob-plan-bar').innerHTML=`
+    ${exploreBadge}
+    ${!isExplore ? `
+    <div class="plan-bar-gig-hero">
+      <div class="pbg-left">
+        <div class="pbg-eyebrow">${es?'★ Mejor Valor — Internet Gig':'★ Best Value — Gig Internet'}</div>
+        <div class="pbg-title">${sp.display} Mbps ${S.speed==='gig'?'GIG ':'' }Plan</div>
+        <div class="pbg-sub">${es?'Disney+ · Hulu · Peacock · NOW TV · Cámara de Seguridad':'Disney+ · Hulu · Peacock · NOW TV · Smart Home Camera'}</div>
+      </div>
+      <div class="pbg-price">
+        <div class="pbg-amount">$${sp.price+NOW_TV+SMART_HOME}<span class="pbg-mo">/mo</span></div>
+        <div class="pbg-includes">${es?'Precio Fijo 5 Años':'5-Year Price Lock'}</div>
+      </div>
+    </div>` : ''}
+    <div class="plan-bar-label">${t('Your Complete Xfinity Bundle')}</div>
+    <div class="plan-bar-rows">
+      ${rows.map(r=>`
+        <div class="pbr">
+          <span>${r.l}</span>
+          <span class="pbr-v">${r.v}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="plan-total-block">
+      <div class="ptb-eyebrow">${t('Total Monthly Cost with Xfinity Mobile')}</div>
+      <div class="ptb-price-row">
+        <div class="ptb-price">$${displayTotal}</div><div class="ptb-mo">/mo</div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:4px;text-align:right;">${es?'c/ autopay y factura sin papel':'w/ autopay &amp; paperless billing'}</div>
+      <div class="ptb-note">${noteText}</div>
+    </div>`;
+}
+
+function backToResult(){
+  if(S.mobMode==='explore' && S.exploreSpeed){
+    S.speed = S.exploreSpeed;
+    S.exploreSpeed = null;
+  }
+  document.getElementById('mobile-screen').classList.remove('active');
+  document.getElementById('result-screen').classList.add('active');
+  scrollToTop();
+}
+
+/* ══════════════════════════════════
+   FINALIZE
+══════════════════════════════════ */
+function showPrepayModal(){
+  document.getElementById('prepay-modal').style.display='block';
+}
+function closePrepayModal(){
+  document.getElementById('prepay-modal').style.display='none';
+}
+function acknowledgeAndFinalize(){
+  closePrepayModal();
+  goToRecap('signed_up');
+}
+
+/* Route both Sign Up (after ack) and No Thanks straight to recap */
+function goToRecap(outcome){
+  S.outcome = outcome; // 'signed_up' or 'no_thanks'
+  document.getElementById('mobile-screen').classList.remove('active');
+  document.getElementById('recap-screen').classList.add('active');
+  scrollToTop();
+  buildRecap();
+  // Reset rep fields each session
+  document.getElementById('rep-name').value='';
+  document.getElementById('rep-store').value='';
+  document.getElementById('rep-submit-status').textContent='';
+  document.getElementById('btn-submit-recap').disabled=true;
+}
+
+function buildRecap(){
+  const sp=spObj(S.speed);
+  const isExplore=S.mobMode==='explore';
+  const gigSp=spObj('gig');
+  const base=isExplore?gigSp.price:(sp.price+NOW_TV+SMART_HOME);
+  const ss=S.streamSaver?SS_PRICE:0;
+  const xmAmt=mobPrice(S.mobLines);
+  const outcome=S.outcome||'signed_up';
+  const includeMobile = outcome==='signed_up'; // only show mobile if customer agreed
+  const total = base + ss + (includeMobile ? xmAmt : 0);
+  const a=S.answers;
+
+  // Outcome badge
+  const badge=document.getElementById('recap-outcome-badge');
+  const title=document.getElementById('recap-outcome-title');
+  if(outcome==='signed_up'){
+    badge.textContent='✓ Approved';
+    badge.className='recap-outcome-badge badge-signedup';
+    title.textContent='Recap Screen';
+  } else {
+    badge.textContent='✗ Declined';
+    badge.className='recap-outcome-badge badge-nothanks';
+    title.textContent='Recap Screen';
+  }
+
+  const quizRows=[
+    {l:'Customer Name',v:a.name||'—'},
+    {l:'Household Size',v:a.people||'—'},
+    {l:'Primary Uses',v:(a.usage&&a.usage.length)?a.usage.join(', '):'—'},
+    {l:'Current Streaming',v:(a.svcs&&a.svcs.length)?a.svcs.join(', '):'—'},
+    {l:'Devices',v:a.devices||'—'},
+  ];
+
+  let planRows=[];
+  if(isExplore){
+    planRows.push({l:'Internet',v:'1,000 Mbps Gig — $60/mo'});
+  } else {
+    planRows.push({l:'Internet + Streaming + Smart Home',v:`${sp.display} Mbps — $${base}/mo`});
+  }
+  if(ss>0) planRows.push({l:'NOW Stream Saver',v:`+$${ss}/mo`});
+  if(includeMobile){
+    planRows.push({l:`Xfinity Mobile (${S.mobLines} line${S.mobLines>1?'s':''})`,v:`+$${xmAmt}/mo`});
+  } else {
+    planRows.push({l:'Xfinity Mobile',v:'Declined'});
+  }
+  if(S.carrier) planRows.push({l:'Previous Carrier',v:S.carrier});
+  if(S.currentBill>0) planRows.push({l:'Previous Phone Bill',v:`$${S.currentBill}/mo`});
+  const savings = S.currentBill>0 ? Math.max(0,Math.round(S.currentBill-xmAmt)) : 0;
+  if(savings>0 && includeMobile) planRows.push({l:'Est. Monthly Savings',v:`$${savings}/mo`});
+
+  document.getElementById('recap-content').innerHTML=`
+    <div class="recap-section">
+      <div class="recap-section-head">Customer Answers</div>
+      ${quizRows.map(r=>`<div class="recap-row"><span class="recap-row-label">${r.l}</span><span class="recap-row-val">${r.v}</span></div>`).join('')}
+    </div>
+    <div class="recap-section">
+      <div class="recap-section-head">Plan Quoted</div>
+      ${planRows.map(r=>`<div class="recap-row"><span class="recap-row-label">${r.l}</span><span class="recap-row-val" style="${r.v==='Declined'?'color:rgba(255,100,100,0.7);':''}">${r.v}</span></div>`).join('')}
+      <div class="recap-total-row">
+        <span class="recap-total-label">${includeMobile?'Monthly Total':'Internet Total'}</span>
+        <div style="text-align:right;">
+          <span class="recap-total-val">$${total}</span><span class="recap-total-mo">/mo</span>
+          <div class="recap-autopay">w/ autopay &amp; paperless billing</div>
+        </div>
+      </div>
+    </div>
+    ${outcome==='signed_up'?`<div class="recap-disclaimer">Today, you will need to pay a <strong>$25 prepayment</strong> toward your first month's bill to start services with Xfinity. That prepayment will be deducted from your first month's bill. Ask your sales representative for a full breakdown of the bill upon signing up for services.</div>`:''}`;
+}
+
+function checkSubmitReady(){
+  const name=document.getElementById('rep-name').value.trim();
+  const store=document.getElementById('rep-store').value;
+  document.getElementById('btn-submit-recap').disabled=!(name&&store);
+}
+
+async function submitToZapier(){
+  const repName=document.getElementById('rep-name').value.trim();
+  const repStore=document.getElementById('rep-store').value;
+  const sp=spObj(S.speed);
+  const isExplore=S.mobMode==='explore';
+  const gigSp=spObj('gig');
+  const base=isExplore?gigSp.price:(sp.price+NOW_TV+SMART_HOME);
+  const ss=S.streamSaver?SS_PRICE:0;
+  const xmAmt=mobPrice(S.mobLines);
+  const total=base+ss+xmAmt;
+  const savings=S.currentBill>0?Math.max(0,Math.round(S.currentBill-xmAmt)):0;
+  const a=S.answers;
+
+  const payload={
+    submitted_at: new Date().toLocaleString('en-US',{timeZone:'America/Chicago'}),
+    rep_name: repName,
+    store: repStore,
+    outcome: S.outcome==='signed_up'?'Signed Up':'No Thanks',
+    // Customer info
+    customer_name: a.name||'',
+    household_size: a.people||'',
+    primary_uses: (a.usage||[]).join(', '),
+    current_streaming: (a.svcs||[]).join(', '),
+    devices: a.devices||'',
+    // Plan
+    recommended_speed: sp.display+' Mbps',
+    internet_plan: isExplore?'Gig Internet Only ($60)':sp.display+' Mbps + Streaming + Smart Home ($'+base+')',
+    stream_saver: ss>0?'Yes ($'+ss+'/mo)':'No',
+    xfinity_mobile_lines: S.mobLines,
+    xfinity_mobile_price: '$'+xmAmt+'/mo',
+    monthly_total: '$'+total+'/mo',
+    // Mobile comparison
+    previous_carrier: S.carrier||'',
+    previous_bill: S.currentBill>0?'$'+S.currentBill+'/mo':'',
+    estimated_monthly_savings: savings>0?'$'+savings+'/mo':'',
+    estimated_yearly_savings: savings>0?'$'+(savings*12).toLocaleString():'',
+  };
+
+  const ZAPIER_WEBHOOK = 'YOUR_ZAPIER_WEBHOOK_URL_HERE';
+
+  const btn=document.getElementById('btn-submit-recap');
+  const status=document.getElementById('rep-submit-status');
+  btn.disabled=true;
+  btn.innerHTML='Submitting...';
+  status.style.color='rgba(255,255,255,0.5)';
+  status.textContent='Sending...';
+
+  try {
+    await fetch(ZAPIER_WEBHOOK,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      mode:'no-cors'
+    });
+    status.style.color='var(--green)';
+    status.textContent='✓ Session submitted successfully!';
+    btn.innerHTML='✓ Submitted';
+    btn.style.background='rgba(0,212,106,0.2)';
+    btn.style.border='1px solid rgba(0,212,106,0.4)';
+    btn.style.color='var(--green)';
+  } catch(err){
+    status.style.color='#ff6b6b';
+    status.textContent='Submission failed — please try again.';
+    btn.disabled=false;
+    btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Submit Session';
+  }
+}
+
+/* Legacy showRecap — now just routes to goToRecap */
+function showRecap(){ goToRecap(S.outcome||'signed_up'); }
+
+function finalize(){ goToRecap('signed_up'); }
+
+/* ══════════════════════════════════
+   RESTART
+══════════════════════════════════ */
+function restart(){
+  Object.assign(S,{answers:{},step:0,speed:'gig',streamSaver:false,carrier:'',mobLines:1,currentBill:0,mobMode:'signup',outcome:null,exploreSpeed:null});
+  ['result-screen','mobile-screen','recap-screen'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('quiz-screen').classList.add('active');
+  scrollToTop();
+  renderQuiz();
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
